@@ -1,10 +1,15 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Home, Search, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlassCard, GlassCardContent } from "@/components/ui/glass-card";
 import { GradientText } from "@/components/ui/gradient-text";
 
 export default function NotFound() {
+  const router = useRouter();
+
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -41,11 +46,14 @@ export default function NotFound() {
           </div>
 
           <div className="mt-8 pt-6 border-t border-[var(--glass-border)]">
-            <Button asChild variant="ghost" size="sm" className="text-muted-foreground">
-              <Link href="javascript:history.back()">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Go back
-              </Link>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.back()}
+              className="text-muted-foreground"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Go back
             </Button>
           </div>
         </GlassCardContent>
