@@ -21,7 +21,7 @@ function parseArgs(): {
   if (sourcesArg) {
     const value = sourcesArg.split("=")[1];
     if (value === "all") {
-      sources = ["mcp-registry", "npm", "github"];
+      sources = ["mcp-registry", "glama", "npm", "github"];
     } else {
       sources = value.split(",").map((s) => s.trim() as SourceType);
     }

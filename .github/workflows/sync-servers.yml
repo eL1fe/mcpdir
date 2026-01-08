@@ -12,6 +12,7 @@ on:
         options:
           - all
           - mcp-registry
+          - glama
           - npm
           - github
       force:

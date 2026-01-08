@@ -9,6 +9,7 @@ import {
   tags,
   serverCategories,
   serverTags,
+  manualValidations,
 } from "../../src/lib/db/schema";
 import { parseServerWithAI, estimateTokens, estimateCost } from "./ai-parser";
 import { processReadme, getDefaultBranch } from "./readme-processor";
@@ -567,6 +568,30 @@ export async function syncServers(options: SyncOptions = {}): Promise<SyncResult
 
       result.updated++;
       if (isNew) result.newServers++;
+
+      // Queue re-validation if version changed on a validated server
+      if (
+        !isNew &&
+        existingServer &&
+        existingServer.validationStatus === "validated" &&
+        mergedServer.version &&
+        existingServer.latestVersion &&
+        existingServer.latestVersion !== mergedServer.version
+      ) {
+        console.log(
+          `  Version changed: ${existingServer.latestVersion} → ${mergedServer.version}, queuing re-validation`
+        );
+        await getDb()
+          .insert(manualValidations)
+          .values({
+            serverId: inserted.id,
+            userId: null, // System-triggered
+            installCommand: inserted.installCommand,
+            status: "pending",
+            isOwnerSubmission: 0,
+          })
+          .onConflictDoNothing(); // Avoid duplicates
+      }
 
       // Auto-validate new servers if enabled
       if (isNew && validateNew && inserted.installCommand) {

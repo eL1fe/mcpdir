@@ -21,8 +21,8 @@ export const servers = pgTable("servers", {
   description: text("description"),
 
   // Source
-  sourceType: varchar("source_type", { length: 50 }).notNull(), // github | npm | pypi | manual
-  sourceUrl: varchar("source_url", { length: 500 }).notNull(),
+  sourceType: varchar("source_type", { length: 50 }).notNull(), // github | npm | pypi | manual | glama
+  sourceUrl: varchar("source_url", { length: 500 }).notNull().unique(),
   homepageUrl: varchar("homepage_url", { length: 500 }),
 
   // Package info
@@ -219,6 +219,9 @@ export const manualValidations = pgTable("manual_validations", {
   // GitHub Actions async validation
   encryptedCredentials: text("encrypted_credentials"), // Temporary, deleted after validation
   workflowRunId: varchar("workflow_run_id", { length: 100 }), // GitHub Actions run ID
+  // Retry tracking
+  retryCount: integer("retry_count").default(0),
+  lastRetryAt: timestamp("last_retry_at"),
 });
 
 // Validation audit log

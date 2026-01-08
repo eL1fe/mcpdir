@@ -3,9 +3,10 @@ import { DiscoveredServer, SourceType } from "./sources/base";
 // Priority for data when merging from multiple sources (lower = higher priority)
 const SOURCE_PRIORITY: Record<SourceType, number> = {
   "mcp-registry": 1,
-  npm: 2,
-  github: 3,
-  pypi: 4,
+  glama: 2,
+  npm: 3,
+  github: 4,
+  pypi: 5,
 };
 
 // Field-specific priority overrides
