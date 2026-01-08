@@ -24,7 +24,7 @@ const STEPS = [
   { name: "truncate", desc: "Truncate servers table", cmd: null },
   { name: "sync", desc: "Sync from all sources", cmd: "pnpm sync:all" },
   { name: "enrich", desc: "Enrich from Glama", cmd: "pnpm enrich:glama" },
-  { name: "validate", desc: "Validate popular servers", cmd: "pnpm validate:popular" },
+  { name: "validate", desc: "Validate all servers", cmd: "pnpm validate --limit=10000" },
 ];
 
 async function confirm(message: string): Promise<boolean> {
@@ -127,8 +127,8 @@ async function main() {
 
     // Step 4: Validate
     if (!skipValidate) {
-      console.log("\n🔍 Step 4/4: Validating popular servers...\n");
-      await runCommand("pnpm validate:popular");
+      console.log("\n🔍 Step 4/4: Validating all servers...\n");
+      await runCommand("pnpm validate --limit=10000");
     } else {
       console.log("\n⏭️  Step 4/4: Skipping validation\n");
     }
