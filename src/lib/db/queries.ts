@@ -388,8 +388,9 @@ export async function trackSearch(data: {
   if (!data.query || data.query.length < 2) return;
 
   try {
-    const { neonClient } = await import(".");
-    await neonClient`
+    const { getSql } = await import(".");
+    const sql = getSql();
+    await sql`
       INSERT INTO search_queries (query, results_count, category, tags)
       VALUES (${data.query.slice(0, 500)}, ${data.resultsCount}, ${data.category ?? null}, ${data.tags ?? null})
     `;
@@ -399,8 +400,9 @@ export async function trackSearch(data: {
 }
 
 export async function getPopularSearches(limit = 10) {
-  const { neonClient } = await import(".");
-  const results = await neonClient`
+  const { getSql } = await import(".");
+  const sql = getSql();
+  const results = await sql`
     SELECT query, COUNT(*) as count
     FROM search_queries
     WHERE created_at > NOW() - INTERVAL '7 days'
