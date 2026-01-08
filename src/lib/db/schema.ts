@@ -67,6 +67,14 @@ export const servers = pgTable("servers", {
   npmQualityScore: numeric("npm_quality_score", { precision: 3, scale: 2 }), // npm quality score 0-1
   discoveredSources: jsonb("discovered_sources").$type<string[]>().default([]), // ['mcp-registry', 'npm', 'github']
 
+  // Glama enrichment data
+  glamaSlug: varchar("glama_slug", { length: 255 }), // e.g. "@stripe/agent-toolkit" for linking
+  glamaQualityScore: integer("glama_quality_score"), // 0-130+
+  glamaSecurityScore: integer("glama_security_score"), // 0-130+
+  glamaLicenseScore: integer("glama_license_score"), // 0-100
+  supportedPlatforms: jsonb("supported_platforms").$type<string[]>(), // ['MACOS', 'WINDOWS', 'LINUX']
+  glamaEnrichedAt: timestamp("glama_enriched_at"),
+
   // Meta
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

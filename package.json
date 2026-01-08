@@ -20,7 +20,8 @@
     "sync:github": "tsx scripts/sync-servers.ts --sources=github",
     "sync:all": "tsx scripts/sync-servers.ts --sources=all",
     "validate": "tsx scripts/validate-servers.ts",
-    "validate:popular": "tsx scripts/validate-servers.ts --popular"
+    "validate:popular": "tsx scripts/validate-servers.ts --popular",
+    "enrich:glama": "dotenv -e .env.local -- tsx scripts/enrich-from-glama.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
