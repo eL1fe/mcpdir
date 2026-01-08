@@ -2,6 +2,7 @@ import { SyncSource, DiscoveredServer, SyncSourceOptions, SyncBatch, normalizeGi
 import { jsonrepair } from "jsonrepair";
 
 const GLAMA_API_URL = "https://glama.ai/api/mcp/v1/servers";
+const GLAMA_SITEMAP_URL = "https://glama.ai/sitemaps/mcp-servers.xml";
 
 interface GlamaServer {
   id: string;
@@ -35,6 +36,58 @@ interface GlamaResponse {
 export class GlamaSource extends SyncSource {
   readonly name = "glama" as const;
 
+  /**
+   * Fetch additional servers from Glama's sitemap.
+   * Their API is limited to ~100 servers, but sitemap has ~500.
+   */
+  private async fetchFromSitemap(seenUrls: Set<string>): Promise<DiscoveredServer[]> {
+    console.log("  glama: fetching additional servers from sitemap...");
+
+    const response = await fetch(GLAMA_SITEMAP_URL);
+    if (!response.ok) {
+      console.warn(`  glama: sitemap fetch failed: ${response.status}`);
+      return [];
+    }
+
+    const xml = await response.text();
+    const urlMatches = xml.matchAll(/<loc>https:\/\/glama\.ai\/mcp\/servers\/([^<]+)<\/loc>/g);
+
+    const servers: DiscoveredServer[] = [];
+
+    for (const match of urlMatches) {
+      const slug = match[1];
+
+      // Extract GitHub info from @username/repo format
+      if (!slug.startsWith("@")) continue;
+
+      const ghPath = slug.slice(1); // Remove @
+      const [owner, repo] = ghPath.split("/");
+      if (!owner || !repo) continue;
+
+      const githubUrl = `https://github.com/${owner}/${repo}`;
+      const glamaUrl = `https://glama.ai/mcp/servers/${slug}`;
+
+      // Skip if already seen from API
+      if (seenUrls.has(githubUrl) || seenUrls.has(glamaUrl)) continue;
+      seenUrls.add(githubUrl);
+
+      servers.push({
+        canonicalUrl: githubUrl,
+        githubOwner: owner,
+        githubRepo: repo,
+        name: repo,
+        description: undefined,
+        source: "glama",
+        sourceIdentifier: slug,
+        sourceUrl: glamaUrl,
+        sourceData: { fromSitemap: true },
+      });
+    }
+
+    console.log(`  glama: found ${servers.length} additional servers from sitemap`);
+    return servers;
+  }
+
   async *fetchServers(options: SyncSourceOptions): AsyncGenerator<SyncBatch> {
     const seenUrls = new Set<string>();
     let cursor: string | undefined;
@@ -42,6 +95,7 @@ export class GlamaSource extends SyncSource {
     let consecutiveErrors = 0;
     const MAX_CONSECUTIVE_ERRORS = 3;
 
+    // Phase 1: Fetch from API (limited to ~100)
     while (true) {
       const url = cursor
         ? `${GLAMA_API_URL}?after=${encodeURIComponent(cursor)}`
@@ -138,6 +192,22 @@ export class GlamaSource extends SyncSource {
       if (!hasMore) break;
       cursor = data.pageInfo.endCursor;
       await delay(100);
+    }
+
+    // Phase 2: Fetch additional servers from sitemap (bypasses API limit)
+    if (!options.limit || totalFetched < options.limit) {
+      const sitemapServers = await this.fetchFromSitemap(seenUrls);
+
+      if (sitemapServers.length > 0) {
+        const remaining = options.limit ? options.limit - totalFetched : sitemapServers.length;
+        const toYield = sitemapServers.slice(0, remaining);
+
+        yield {
+          servers: toYield,
+          hasMore: false,
+          stats: { fetched: toYield.length, filtered: sitemapServers.length - toYield.length, errors: 0 },
+        };
+      }
     }
   }
 }

@@ -271,8 +271,8 @@ async function fetchFromSources(
         stats[sourceName].errors += batch.stats.errors;
 
         console.log(`  ${sourceName}: ${allDiscovered.filter((s) => s.source === sourceName).length} servers...`);
-
-        if (!batch.hasMore) break;
+        // Don't break on hasMore=false - let generator exhaust naturally
+        // (some sources have multiple phases, like Glama's API + sitemap)
       }
     } catch (err) {
       console.error(`Error fetching from ${sourceName}:`, err);
