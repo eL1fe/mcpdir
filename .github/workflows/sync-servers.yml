@@ -56,6 +56,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_PAT || github.token }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
 
+      - name: Enrich from Glama
+        run: pnpm tsx scripts/enrich-from-glama.ts --integrations=200
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
       - name: Summary
         if: always()
         run: |
