@@ -39,3 +39,27 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# sqlew system files (auto-generated)
+.claude/agents/sqlew-*
+.claude/commands/sqw-*
+
+# sqlew auto-generated files
+.claude/skills/sqlew-decision-format/
+.claude/skills/sqlew-plan-guidance/
+.claude/rules/plan-mode-integration.md
+.claude/commands/sqlew.md
+
+# Local development files
+*.db
+*.sqlite
+*.log
+mcp-all/
+logs/
+strategic-data.json
+.faf-dna
+.fafignore
+project.faf*
+.sqlew/
+.statecli/
+MCP_HUB_IMPLEMENTATION_PLAN.md

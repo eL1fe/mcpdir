@@ -1,0 +1,55 @@
+name: Validate MCP Servers
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM UTC
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Number of servers to validate'
+        default: '50'
+        type: string
+      popular-only:
+        description: 'Only validate popular servers (500+ stars)'
+        default: false
+        type: boolean
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run validation
+        run: |
+          ARGS="--limit=${{ inputs.limit || '50' }}"
+          if [ "${{ inputs.popular-only }}" = "true" ]; then
+            ARGS="$ARGS --popular"
+          fi
+          pnpm validate $ARGS
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Validation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- Limit: ${{ inputs.limit || '50' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Popular only: ${{ inputs.popular-only || 'false' }}" >> $GITHUB_STEP_SUMMARY
