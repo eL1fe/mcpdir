@@ -22,7 +22,6 @@ const EXCLUDED_REPOS = new Set([
   "activepieces/activepieces", // Automation platform
   "1panel-dev/maxkb", // Knowledge base
   "sansan0/trendradar", // Trend analysis tool
-  "netdata/netdata", // Infrastructure monitoring platform
 ]);
 
 interface GitHubRepo {
