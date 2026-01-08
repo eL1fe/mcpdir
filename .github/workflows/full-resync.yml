@@ -86,11 +86,11 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-      - name: Step 4 - Validate popular servers
+      - name: Step 4 - Validate all servers
         if: inputs.skip_validate == false
         run: |
-          echo "🔍 Validating popular servers..."
-          pnpm tsx scripts/validate-servers.ts --popular
+          echo "🔍 Validating all servers..."
+          pnpm tsx scripts/validate-servers.ts --limit=10000
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
