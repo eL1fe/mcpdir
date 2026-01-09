@@ -28,7 +28,7 @@ import { SITE_CONFIG, SITE_URL } from "@/lib/seo";
 export const metadata: Metadata = {
   title: `${SITE_CONFIG.name} — Discover MCP Servers for AI Development`,
   description:
-    "Explore 2000+ Model Context Protocol (MCP) servers. Find AI integrations for databases, APIs, file systems, and developer tools. The npm for AI.",
+    "Explore 8000+ Model Context Protocol (MCP) servers. Find AI integrations for databases, APIs, file systems, and developer tools. The npm for AI.",
   keywords: [
     "MCP servers",
     "Model Context Protocol",
@@ -105,7 +105,7 @@ export default async function HomePage() {
             <div className="max-w-2xl mx-auto mb-10 animate-fade-in [animation-delay:300ms] relative z-50">
               <div className="glass rounded-2xl p-1.5">
                 <SearchCommand
-                  placeholder="Search 2000+ MCP servers..."
+                  placeholder="Search 8000+ MCP servers..."
                   className="[&_input]:bg-background/50 [&_input]:border-0 [&_input]:h-14 [&_input]:text-lg [&_input]:rounded-xl"
                 />
               </div>
@@ -305,7 +305,7 @@ export default async function HomePage() {
                 </div>
                 <h3 className="text-lg font-semibold mb-3">Community Ecosystem</h3>
                 <p className="text-sm text-muted-foreground">
-                  2000+ community-built servers ready to use in your projects
+                  8000+ community-built servers ready to use in your projects
                 </p>
               </GlassCardContent>
             </GlassCard>

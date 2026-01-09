@@ -75,6 +75,12 @@ export const servers = pgTable("servers", {
   supportedPlatforms: jsonb("supported_platforms").$type<string[]>(), // ['MACOS', 'WINDOWS', 'LINUX']
   glamaEnrichedAt: timestamp("glama_enriched_at"),
 
+  // User features
+  claimedBy: uuid("claimed_by"),
+  claimedAt: timestamp("claimed_at"),
+  averageRating: numeric("average_rating", { precision: 2, scale: 1 }),
+  reviewsCount: integer("reviews_count").default(0),
+
   // Meta
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -145,10 +151,17 @@ export const serverSources = pgTable(
 );
 
 // Relations
-export const serversRelations = relations(servers, ({ many }) => ({
+export const serversRelations = relations(servers, ({ many, one }) => ({
   serverCategories: many(serverCategories),
   serverTags: many(serverTags),
   serverSources: many(serverSources),
+  reviews: many(reviews),
+  reports: many(reports),
+  claims: many(serverClaims),
+  claimedByUser: one(users, {
+    fields: [servers.claimedBy],
+    references: [users.id],
+  }),
 }));
 
 export const categoriesRelations = relations(categories, ({ many }) => ({
@@ -243,11 +256,109 @@ export const validationAuditLog = pgTable("validation_audit_log", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Server submissions (user-submitted servers for review)
+export const submissions = pgTable("submissions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+
+  // GitHub repo info
+  githubUrl: varchar("github_url", { length: 500 }).notNull(),
+  repoOwner: varchar("repo_owner", { length: 100 }).notNull(),
+  repoName: varchar("repo_name", { length: 100 }).notNull(),
+
+  // Metadata (auto-fetched from GitHub)
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  starsCount: integer("stars_count"),
+
+  // User input
+  categoryIds: jsonb("category_ids").$type<string[]>().default([]),
+
+  // Review
+  status: varchar("status", { length: 50 }).default("pending").notNull(), // pending | approved | rejected
+  reviewedBy: uuid("reviewed_by").references(() => users.id),
+  reviewedAt: timestamp("reviewed_at"),
+  rejectionReason: text("rejection_reason"),
+
+  // Result (after approval)
+  serverId: uuid("server_id").references(() => servers.id),
+
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Reviews & ratings
+export const reviews = pgTable(
+  "reviews",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    serverId: uuid("server_id")
+      .notNull()
+      .references(() => servers.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    rating: integer("rating").notNull(), // 1-5
+    content: text("content"),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (t) => [uniqueIndex("review_user_server_unique").on(t.serverId, t.userId)]
+);
+
+// Issue reports
+export const reports = pgTable("reports", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  serverId: uuid("server_id")
+    .notNull()
+    .references(() => servers.id, { onDelete: "cascade" }),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  type: varchar("type", { length: 50 }).notNull(), // broken | spam | outdated | security | other
+  description: text("description"),
+  status: varchar("status", { length: 50 }).default("pending").notNull(), // pending | resolved | dismissed
+  resolvedBy: uuid("resolved_by").references(() => users.id),
+  resolvedAt: timestamp("resolved_at"),
+  resolutionNote: text("resolution_note"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Server ownership claims
+export const serverClaims = pgTable(
+  "server_claims",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    serverId: uuid("server_id")
+      .notNull()
+      .references(() => servers.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    verificationMethod: varchar("verification_method", { length: 50 }).notNull(), // file | github_owner
+    verificationToken: varchar("verification_token", { length: 100 }).notNull(),
+    status: varchar("status", { length: 50 }).default("pending").notNull(), // pending | verified | rejected | expired
+    verifiedAt: timestamp("verified_at"),
+    expiresAt: timestamp("expires_at"),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (t) => [uniqueIndex("claim_server_user_unique").on(t.serverId, t.userId)]
+);
+
 // Relations for users
 export const usersRelations = relations(users, ({ many }) => ({
   manualValidations: many(manualValidations),
   reviewedValidations: many(manualValidations, { relationName: "reviewer" }),
   auditLogs: many(validationAuditLog),
+  submissions: many(submissions),
+  reviewedSubmissions: many(submissions, { relationName: "submissionReviewer" }),
+  reviews: many(reviews),
+  reports: many(reports),
+  resolvedReports: many(reports, { relationName: "reportResolver" }),
+  serverClaims: many(serverClaims),
+  claimedServers: many(servers),
 }));
 
 export const manualValidationsRelations = relations(manualValidations, ({ one }) => ({
