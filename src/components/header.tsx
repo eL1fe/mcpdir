@@ -23,6 +23,7 @@ export function Header() {
   const navItems = [
     { href: "/servers", label: "Servers" },
     { href: "/categories", label: "Categories" },
+    { href: "/submit", label: "Submit" },
   ];
 
   return (

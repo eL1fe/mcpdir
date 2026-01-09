@@ -2,10 +2,12 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GlassCard, GlassCardContent, GlassCardHeader, GlassCardTitle } from "@/components/ui/glass-card";
-import { ListTodo, History, BarChart3 } from "lucide-react";
+import { ListTodo, History, BarChart3, Upload, Flag } from "lucide-react";
 import { ValidationQueue } from "./validation-queue";
 import { ValidationHistory } from "./validation-history";
 import { ValidationStats } from "./validation-stats";
+import { SubmissionsQueue } from "./submissions-queue";
+import { ReportsQueue } from "./reports-queue";
 
 export function AdminTabs() {
   return (
@@ -22,6 +24,14 @@ export function AdminTabs() {
         <TabsTrigger value="stats" className="gap-2 data-[state=active]:bg-cyan/10 data-[state=active]:text-cyan">
           <BarChart3 className="w-4 h-4" />
           Stats
+        </TabsTrigger>
+        <TabsTrigger value="submissions" className="gap-2 data-[state=active]:bg-cyan/10 data-[state=active]:text-cyan">
+          <Upload className="w-4 h-4" />
+          Submissions
+        </TabsTrigger>
+        <TabsTrigger value="reports" className="gap-2 data-[state=active]:bg-cyan/10 data-[state=active]:text-cyan">
+          <Flag className="w-4 h-4" />
+          Reports
         </TabsTrigger>
       </TabsList>
 
@@ -49,6 +59,28 @@ export function AdminTabs() {
 
       <TabsContent value="stats">
         <ValidationStats />
+      </TabsContent>
+
+      <TabsContent value="submissions">
+        <GlassCard hover={false}>
+          <GlassCardHeader>
+            <GlassCardTitle>Server Submissions</GlassCardTitle>
+          </GlassCardHeader>
+          <GlassCardContent>
+            <SubmissionsQueue />
+          </GlassCardContent>
+        </GlassCard>
+      </TabsContent>
+
+      <TabsContent value="reports">
+        <GlassCard hover={false}>
+          <GlassCardHeader>
+            <GlassCardTitle>Issue Reports</GlassCardTitle>
+          </GlassCardHeader>
+          <GlassCardContent>
+            <ReportsQueue />
+          </GlassCardContent>
+        </GlassCard>
       </TabsContent>
     </Tabs>
   );

@@ -59,6 +59,13 @@ export function UserMenu() {
           Signed in as @{session.user.githubUsername}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
+        <DropdownMenuItem asChild className="cursor-pointer">
+          <Link href={`/u/${session.user.githubUsername}`}>
+            <User className="h-4 w-4 mr-2" />
+            My Profile
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => signOut()}
           className="text-red-400 focus:text-red-400 cursor-pointer"

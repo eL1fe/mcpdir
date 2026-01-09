@@ -29,6 +29,8 @@ import { MarkdownContent } from "@/components/markdown-content";
 import { SourceBadges } from "@/components/source-badges";
 import { HelpValidateForm } from "@/components/help-validate-form";
 import { ServerReviews } from "@/components/reviews";
+import { ReportDialog } from "@/components/reports";
+import { ClaimButton } from "@/components/claims";
 import { SITE_URL, generateServerSchema, generateBreadcrumbSchema } from "@/lib/seo";
 
 interface Props {
@@ -301,6 +303,24 @@ export default async function ServerDetailPage({ params }: Props) {
                     )}
                   </div>
 
+                  {/* Report button */}
+                  <div className="pt-3 border-t border-[var(--glass-border)]">
+                    <ReportDialog
+                      serverId={server.id}
+                      serverName={server.name}
+                    />
+                  </div>
+
+                  {/* Claim button */}
+                  <div className="pt-3 border-t border-[var(--glass-border)]">
+                    <ClaimButton
+                      serverId={server.id}
+                      serverName={server.name}
+                      githubUrl={server.sourceUrl}
+                      claimedBy={server.claimedBy}
+                    />
+                  </div>
+
                   {/* Validation details (collapsible) */}
                   {server.validationStatus === "validated" && validationResult && (
                     <details className="pt-3 border-t border-[var(--glass-border)]">
@@ -401,7 +421,7 @@ export default async function ServerDetailPage({ params }: Props) {
             <TabsContent value="readme">
               <GlassCard>
                 <GlassCardContent className="prose-container">
-                  <MarkdownContent content={server.readmeContent} />
+                  <MarkdownContent content={server.readmeContent} baseUrl={server.sourceUrl} />
                 </GlassCardContent>
               </GlassCard>
             </TabsContent>
