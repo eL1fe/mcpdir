@@ -2,9 +2,9 @@
 
 # MCP Hub
 
-### The npm for MCP Servers
+### The Largest Open MCP Server Directory
 
-**Discover, validate, and integrate Model Context Protocol servers for AI applications**
+**8,000+ community-driven MCP servers. Open-source, fully searchable, zero vendor lock-in.**
 
 <br />
 
@@ -33,13 +33,13 @@
 
 ## What is MCP Hub?
 
-MCP Hub is the central registry for **Model Context Protocol (MCP) servers** — the open standard that enables AI assistants like Claude, GPT, and others to interact with external tools, databases, and services.
+MCP Hub is the **largest open-source directory** of **Model Context Protocol (MCP) servers** — the open standard that enables AI assistants like Claude, GPT, and others to interact with external tools, databases, and services.
 
-Think of it as **npm for AI integrations**: a searchable directory where you can discover validated MCP servers, view their capabilities, and get instant install commands.
+Unlike closed registries, MCP Hub aggregates servers from **5+ sources** and makes them freely searchable. No walled gardens, no gatekeeping — just a community-driven index of every MCP server we can find.
 
 <div align="center">
 
-> **2000+ servers** · **15+ categories** · **Automated validation** · **Multi-source indexing**
+> **8,000+ servers** · **15+ categories** · **5 data sources** · **100% open-source**
 
 </div>
 
@@ -63,6 +63,7 @@ We aggregate MCP servers from multiple sources to provide the most comprehensive
 | **npm** | Node.js packages with `mcp` keyword | [npmjs.com](https://www.npmjs.com/search?q=keywords:mcp) |
 | **GitHub** | Repositories with `mcp-server` topic | [github.com/topics/mcp-server](https://github.com/topics/mcp-server) |
 | **Glama** | Curated MCP servers from Glama.ai | [glama.ai/mcp/servers](https://glama.ai/mcp/servers) |
+| **PulseMCP** | Community MCP server directory | [pulsemcp.com](https://pulsemcp.com) |
 | **PyPI** | Python packages _(coming soon)_ | — |
 
 ### Server Validation
@@ -258,10 +259,11 @@ We welcome contributions! Here's how to get started:
 ## Roadmap
 
 ### Completed
-- [x] Multi-source indexing (MCP Registry, npm, GitHub, Glama)
+- [x] Multi-source indexing (MCP Registry, npm, GitHub, Glama, PulseMCP)
 - [x] Server submission form with validation
 - [x] Admin dashboard with validation queue
 - [x] Auto-revalidation on version updates
+- [x] 8,000+ servers indexed
 
 ### In Progress
 - [ ] PyPI source integration
