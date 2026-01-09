@@ -419,7 +419,7 @@ export default async function ServerDetailPage({ params }: Props) {
 
           {server.readmeContent && (
             <TabsContent value="readme">
-              <GlassCard>
+              <GlassCard hover={false}>
                 <GlassCardContent className="prose-container">
                   <MarkdownContent content={server.readmeContent} baseUrl={server.sourceUrl} />
                 </GlassCardContent>

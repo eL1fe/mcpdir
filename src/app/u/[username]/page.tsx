@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { db } from "@/lib/db";
 import { users, reviews, submissions, servers } from "@/lib/db/schema";
 import { eq, count, desc, and } from "drizzle-orm";
 import { ProfileHeader, ProfileTabs } from "@/components/profile";
-import { Button } from "@/components/ui/button";
 import { SITE_URL } from "@/lib/seo";
 
 interface Props {
@@ -106,13 +103,6 @@ export default async function UserProfilePage({ params }: Props) {
       <div className="relative overflow-hidden border-b border-[var(--glass-border)]">
         <div className="absolute inset-0 bg-gradient-to-b from-purple/5 via-cyan/3 to-transparent" />
         <div className="container mx-auto px-4 py-8 relative z-10">
-          <Link href="/">
-            <Button variant="ghost" size="sm" className="mb-4 -ml-2">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Home
-            </Button>
-          </Link>
-
           <ProfileHeader user={user} />
         </div>
       </div>
