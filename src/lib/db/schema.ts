@@ -388,6 +388,60 @@ export const validationAuditLogRelations = relations(validationAuditLog, ({ one 
   }),
 }));
 
+export const submissionsRelations = relations(submissions, ({ one }) => ({
+  user: one(users, {
+    fields: [submissions.userId],
+    references: [users.id],
+  }),
+  reviewer: one(users, {
+    fields: [submissions.reviewedBy],
+    references: [users.id],
+    relationName: "submissionReviewer",
+  }),
+  server: one(servers, {
+    fields: [submissions.serverId],
+    references: [servers.id],
+  }),
+}));
+
+export const reviewsRelations = relations(reviews, ({ one }) => ({
+  server: one(servers, {
+    fields: [reviews.serverId],
+    references: [servers.id],
+  }),
+  user: one(users, {
+    fields: [reviews.userId],
+    references: [users.id],
+  }),
+}));
+
+export const reportsRelations = relations(reports, ({ one }) => ({
+  server: one(servers, {
+    fields: [reports.serverId],
+    references: [servers.id],
+  }),
+  user: one(users, {
+    fields: [reports.userId],
+    references: [users.id],
+  }),
+  resolver: one(users, {
+    fields: [reports.resolvedBy],
+    references: [users.id],
+    relationName: "reportResolver",
+  }),
+}));
+
+export const serverClaimsRelations = relations(serverClaims, ({ one }) => ({
+  server: one(servers, {
+    fields: [serverClaims.serverId],
+    references: [servers.id],
+  }),
+  user: one(users, {
+    fields: [serverClaims.userId],
+    references: [users.id],
+  }),
+}));
+
 // Types
 export type Server = typeof servers.$inferSelect;
 export type NewServer = typeof servers.$inferInsert;
@@ -405,3 +459,11 @@ export type ManualValidation = typeof manualValidations.$inferSelect;
 export type NewManualValidation = typeof manualValidations.$inferInsert;
 export type ValidationAuditLog = typeof validationAuditLog.$inferSelect;
 export type NewValidationAuditLog = typeof validationAuditLog.$inferInsert;
+export type Submission = typeof submissions.$inferSelect;
+export type NewSubmission = typeof submissions.$inferInsert;
+export type Review = typeof reviews.$inferSelect;
+export type NewReview = typeof reviews.$inferInsert;
+export type Report = typeof reports.$inferSelect;
+export type NewReport = typeof reports.$inferInsert;
+export type ServerClaim = typeof serverClaims.$inferSelect;
+export type NewServerClaim = typeof serverClaims.$inferInsert;

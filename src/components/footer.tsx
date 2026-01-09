@@ -50,7 +50,7 @@ export function Footer() {
           <p>Built for the AI developer community</p>
           <p className="flex items-center gap-1">
             Indexing
-            <span className="text-cyan font-medium">1,200+</span>
+            <span className="text-cyan font-medium">8,000+</span>
             MCP servers worldwide
           </p>
         </div>

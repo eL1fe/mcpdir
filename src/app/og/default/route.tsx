@@ -87,7 +87,7 @@ export async function GET() {
             color: "#71717a",
           }}
         >
-          <span>1,200+ Servers</span>
+          <span>8,000+ Servers</span>
           <span style={{ color: "#06b6d4" }}>•</span>
           <span>AI Integrations</span>
           <span style={{ color: "#a855f7" }}>•</span>
