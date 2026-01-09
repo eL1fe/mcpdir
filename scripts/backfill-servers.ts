@@ -186,7 +186,7 @@ async function backfillServers(options: BackfillOptions) {
 
     if ((i + 1) % 25 === 0) {
       console.log(`\nProgress: ${i + 1}/${serversToProcess.length} (${Math.round((i + 1) / serversToProcess.length * 100)}%)`);
-      console.log(`  README fetched: ${stats.readmeFetched}, AI parsed: ${stats.aiParsed}, errors: ${stats.errors}`);
+      console.log(`  README: ${stats.readmeFetched} fetched, ${stats.readmeFailed} failed | AI: ${stats.aiParsed} parsed, ${stats.aiFailed} failed | errors: ${stats.errors}`);
     }
 
     try {
@@ -207,6 +207,10 @@ async function backfillServers(options: BackfillOptions) {
             needsUpdate = true;
           } else {
             stats.readmeFailed++;
+            // Log first few failures for debugging
+            if (stats.readmeFailed <= 3) {
+              console.log(`  ⚠ No README: ${parsed.owner}/${parsed.repo} (${server.sourceUrl})`);
+            }
           }
         }
       }
