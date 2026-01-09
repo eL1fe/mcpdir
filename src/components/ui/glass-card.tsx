@@ -37,13 +37,15 @@ function GlassCard({
           "before:blur-xl before:opacity-50",
         ],
 
-        // Hover effect
+        // Hover effect with subtle scale
         hover && [
           "hover:-translate-y-1",
+          "hover:scale-[1.02]",
           "hover:shadow-lg",
           "hover:border-[var(--border-hover)]",
           glow === "cyan" && "hover:shadow-[var(--glow-cyan-strong)]",
           glow === "purple" && "hover:shadow-[var(--glow-purple-strong)]",
+          glow === "none" && "hover:shadow-[0_0_30px_oklch(0.78_0.16_195_/_0.15)]",
         ],
 
         className

@@ -221,7 +221,7 @@ export default async function HomePage() {
 
                     {server.installCommand && (
                       <div className="mt-auto">
-                        <code className="block px-3 py-2 bg-background/50 rounded-lg text-xs font-mono truncate">
+                        <code className="block px-3 py-2 bg-black/40 rounded-lg text-xs font-mono truncate text-cyan/90 border border-[var(--glass-border)]">
                           {server.installCommand}
                         </code>
                       </div>

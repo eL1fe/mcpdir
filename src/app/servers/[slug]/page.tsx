@@ -180,25 +180,25 @@ export default async function ServerDetailPage({ params }: Props) {
               {/* Status badges */}
               <div className="flex items-center gap-2 mt-4 flex-wrap">
                 {isOfficial && (
-                  <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 gap-1">
+                  <Badge className="bg-[var(--status-official-bg)] text-[var(--status-official)] border-[var(--status-official)]/30 gap-1">
                     <CheckCircle className="h-3 w-3" />
                     Official
                   </Badge>
                 )}
                 {server.validationStatus === "validated" && (
-                  <Badge className="bg-green/20 text-green border-green/30 gap-1">
+                  <Badge className="bg-[var(--status-validated-bg)] text-[var(--status-validated)] border-[var(--status-validated)]/30 gap-1">
                     <ShieldCheck className="h-3 w-3" />
                     Validated
                   </Badge>
                 )}
                 {server.validationStatus === "needs_config" && (
-                  <Badge variant="outline" className="gap-1 border-yellow-500/30 text-yellow-500">
+                  <Badge variant="outline" className="gap-1 bg-[var(--status-warning-bg)] text-[var(--status-warning)] border-[var(--status-warning)]/30">
                     <Settings className="h-3 w-3" />
                     Requires Setup
                   </Badge>
                 )}
                 {server.validationStatus === "failed" && (
-                  <Badge variant="destructive" className="gap-1">
+                  <Badge className="gap-1 bg-[var(--status-failed-bg)] text-[var(--status-failed)] border-[var(--status-failed)]/30">
                     <XCircle className="h-3 w-3" />
                     Validation Failed
                   </Badge>

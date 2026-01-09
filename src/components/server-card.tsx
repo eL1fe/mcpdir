@@ -31,25 +31,25 @@ export function ServerCard({ server, featured = false }: ServerCardProps) {
               </GlassCardTitle>
               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                 {isOfficial && (
-                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 gap-1 bg-blue-500/20 text-blue-400 border-blue-500/30">
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 gap-1 bg-[var(--status-official-bg)] text-[var(--status-official)] border-[var(--status-official)]/30">
                     <CheckCircle className="h-3 w-3" />
                     Official
                   </Badge>
                 )}
                 {isValidated && (
-                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 gap-1 bg-green/20 text-green border-green/30">
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 gap-1 bg-[var(--status-validated-bg)] text-[var(--status-validated)] border-[var(--status-validated)]/30">
                     <ShieldCheck className="h-3 w-3" />
                     Validated
                   </Badge>
                 )}
                 {needsConfig && (
-                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 gap-1 bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 gap-1 bg-[var(--status-warning-bg)] text-[var(--status-warning)] border-[var(--status-warning)]/30">
                     <Settings className="h-3 w-3" />
                     Needs Setup
                   </Badge>
                 )}
                 {isFailed && (
-                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 gap-1 bg-red-500/20 text-red-400 border-red-500/30">
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 gap-1 bg-[var(--status-failed-bg)] text-[var(--status-failed)] border-[var(--status-failed)]/30">
                     <XCircle className="h-3 w-3" />
                     Failed
                   </Badge>
@@ -75,7 +75,7 @@ export function ServerCard({ server, featured = false }: ServerCardProps) {
 
           {server.installCommand && featured && (
             <div className="mt-4">
-              <code className="block px-3 py-2 bg-background/50 rounded-lg text-xs font-mono truncate text-muted-foreground">
+              <code className="block px-3 py-2 bg-black/40 rounded-lg text-xs font-mono truncate text-cyan/90 border border-[var(--glass-border)]">
                 {server.installCommand}
               </code>
             </div>

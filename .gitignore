@@ -63,3 +63,7 @@ project.faf*
 .sqlew/
 .statecli/
 MCP_HUB_IMPLEMENTATION_PLAN.md
+
+# Scrapers (not for public repo)
+scripts/scrape-pulsemcp.ts
+.github/workflows/scrape-pulsemcp.yml

@@ -23,7 +23,9 @@
     "validate:popular": "dotenv -e .env.local -- tsx scripts/validate-servers.ts --popular",
     "enrich:glama": "dotenv -e .env.local -- tsx scripts/enrich-from-glama.ts",
     "resync": "dotenv -e .env.local -- tsx scripts/full-resync.ts",
-    "sync:daily": "dotenv -e .env.local -- tsx scripts/daily-sync.ts"
+    "sync:daily": "dotenv -e .env.local -- tsx scripts/daily-sync.ts",
+    "refresh:stats": "dotenv -e .env.local -- tsx scripts/refresh-github-stats.ts",
+    "scrape:pulsemcp": "dotenv -e .env.local -- tsx scripts/scrape-pulsemcp.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",

@@ -18,19 +18,12 @@ const SORT_OPTIONS = [
   { value: "name", label: "Name", searchOnly: false },
 ] as const;
 
-const TAG_OPTIONS = [
-  { value: "official", label: "Official" },
-  { value: "community", label: "Community" },
-  { value: "verified", label: "Verified" },
-] as const;
-
 export function FilterBar({ categories }: FilterBarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
   const currentCategory = searchParams.get("category");
-  const currentTags = searchParams.get("tags")?.split(",").filter(Boolean) ?? [];
   const hasQuery = !!searchParams.get("q");
   // Default sort is "relevance" when searching, "stars" otherwise
   const currentSort = searchParams.get("sort") || (hasQuery ? "relevance" : "stars");
@@ -56,14 +49,6 @@ export function FilterBar({ categories }: FilterBarProps) {
     [router, searchParams]
   );
 
-  const toggleTag = (tag: string) => {
-    const newTags = currentTags.includes(tag)
-      ? currentTags.filter((t) => t !== tag)
-      : [...currentTags, tag];
-
-    updateParams({ tags: newTags.length > 0 ? newTags.join(",") : null });
-  };
-
   const clearAll = () => {
     startTransition(() => {
       const q = searchParams.get("q");
@@ -72,7 +57,7 @@ export function FilterBar({ categories }: FilterBarProps) {
   };
 
   const defaultSort = hasQuery ? "relevance" : "stars";
-  const hasFilters = currentCategory || currentTags.length > 0 || currentSort !== defaultSort;
+  const hasFilters = currentCategory || currentSort !== defaultSort;
 
   return (
     <div className="space-y-4">
@@ -99,35 +84,20 @@ export function FilterBar({ categories }: FilterBarProps) {
         ))}
       </div>
 
-      {/* Tags and Sort */}
-      <div className="flex flex-wrap items-center gap-4">
-        <div className="flex flex-wrap gap-2">
-          {TAG_OPTIONS.map((tag) => (
-            <Badge
-              key={tag.value}
-              variant={currentTags.includes(tag.value) ? "default" : "outline"}
-              className="cursor-pointer"
-              onClick={() => toggleTag(tag.value)}
-            >
-              {tag.label}
-            </Badge>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-2 ml-auto">
-          <span className="text-sm text-muted-foreground">Sort:</span>
-          {SORT_OPTIONS.filter((opt) => !opt.searchOnly || hasQuery).map((opt) => (
-            <Button
-              key={opt.value}
-              variant={currentSort === opt.value ? "secondary" : "ghost"}
-              size="sm"
-              onClick={() => updateParams({ sort: opt.value })}
-              disabled={isPending}
-            >
-              {opt.label}
-            </Button>
-          ))}
-        </div>
+      {/* Sort */}
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-muted-foreground">Sort:</span>
+        {SORT_OPTIONS.filter((opt) => !opt.searchOnly || hasQuery).map((opt) => (
+          <Button
+            key={opt.value}
+            variant={currentSort === opt.value ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => updateParams({ sort: opt.value })}
+            disabled={isPending}
+          >
+            {opt.label}
+          </Button>
+        ))}
       </div>
 
       {/* Active filters */}
@@ -143,12 +113,6 @@ export function FilterBar({ categories }: FilterBarProps) {
               />
             </Badge>
           )}
-          {currentTags.map((tag) => (
-            <Badge key={tag} variant="secondary" className="gap-1">
-              {TAG_OPTIONS.find((t) => t.value === tag)?.label ?? tag}
-              <X className="h-3 w-3 cursor-pointer" onClick={() => toggleTag(tag)} />
-            </Badge>
-          ))}
           <Button variant="ghost" size="sm" onClick={clearAll} disabled={isPending}>
             Clear all
           </Button>

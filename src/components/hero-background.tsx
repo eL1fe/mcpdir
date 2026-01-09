@@ -24,12 +24,12 @@ export function HeroBackground() {
       time += 0.003;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Create gradient orbs
+      // Create gradient orbs with enhanced visibility
       const orbs = [
-        { x: 0.2, y: 0.3, r: 400, color: "rgba(0, 210, 211, 0.15)" },
-        { x: 0.8, y: 0.6, r: 350, color: "rgba(147, 51, 234, 0.12)" },
-        { x: 0.5, y: 0.8, r: 300, color: "rgba(0, 210, 211, 0.1)" },
-        { x: 0.1, y: 0.7, r: 250, color: "rgba(147, 51, 234, 0.08)" },
+        { x: 0.2, y: 0.3, r: 400, color: "rgba(0, 210, 211, 0.28)" },
+        { x: 0.8, y: 0.6, r: 350, color: "rgba(147, 51, 234, 0.22)" },
+        { x: 0.5, y: 0.8, r: 300, color: "rgba(0, 210, 211, 0.18)" },
+        { x: 0.1, y: 0.7, r: 250, color: "rgba(147, 51, 234, 0.15)" },
       ];
 
       orbs.forEach((orb, i) => {
@@ -68,7 +68,7 @@ export function HeroBackground() {
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 -z-10 opacity-70"
+      className="absolute inset-0 -z-10 opacity-85"
       style={{ filter: "blur(80px)" }}
     />
   );
@@ -78,11 +78,11 @@ export function GridPattern() {
   return (
     <div className="absolute inset-0 -z-10 overflow-hidden">
       <div
-        className="absolute inset-0 opacity-[0.03]"
+        className="absolute inset-0 opacity-[0.06]"
         style={{
           backgroundImage: `
-            linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
+            linear-gradient(rgba(255,255,255,0.12) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.12) 1px, transparent 1px)
           `,
           backgroundSize: "60px 60px",
         }}
@@ -112,7 +112,7 @@ export function FloatingIcons() {
       {icons.map((item, i) => (
         <div
           key={i}
-          className={`absolute ${item.size} opacity-20 animate-float`}
+          className={`absolute ${item.size} opacity-35 animate-float`}
           style={{
             left: item.x,
             top: item.y,

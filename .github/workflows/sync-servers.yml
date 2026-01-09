@@ -2,19 +2,22 @@ name: Sync MCP Servers
 
 on:
   schedule:
-    - cron: '0 3 * * *'  # Daily at 3am UTC
+    - cron: '0 3 * * *'  # Daily at 3am UTC (fast sources only)
+    - cron: '0 5 * * 0'  # Weekly on Sunday at 5am UTC (all sources including pulsemcp)
   workflow_dispatch:
     inputs:
       sources:
         description: 'Sources to sync'
-        default: 'all'
+        default: 'fast'
         type: choice
         options:
+          - fast
           - all
           - mcp-registry
           - glama
           - npm
           - github
+          - pulsemcp
       force:
         description: 'Force refresh all servers'
         default: false
@@ -43,9 +46,24 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Determine sources
+        id: sources
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            # Weekly cron (Sunday) = all sources, Daily = fast sources
+            if [ "${{ github.event.schedule }}" = "0 5 * * 0" ]; then
+              echo "sources=all" >> $GITHUB_OUTPUT
+            else
+              echo "sources=fast" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "sources=${{ inputs.sources || 'fast' }}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Sync servers
         run: |
-          SOURCES="${{ inputs.sources || 'all' }}"
+          SOURCES="${{ steps.sources.outputs.sources }}"
+          echo "Syncing sources: $SOURCES"
           if [ "${{ inputs.force }}" = "true" ]; then
             FORCE_REFRESH=true pnpm tsx scripts/sync-servers.ts --sources=$SOURCES --force
           else
@@ -55,6 +73,7 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           GITHUB_TOKEN: ${{ secrets.GH_PAT || github.token }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
       - name: Enrich from Glama
         run: pnpm tsx scripts/enrich-from-glama.ts --integrations=200
@@ -65,6 +84,6 @@ jobs:
         if: always()
         run: |
           echo "## Sync Summary" >> $GITHUB_STEP_SUMMARY
-          echo "- Sources: ${{ inputs.sources || 'all' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Sources: ${{ steps.sources.outputs.sources }}" >> $GITHUB_STEP_SUMMARY
           echo "- Force refresh: ${{ inputs.force || 'false' }}" >> $GITHUB_STEP_SUMMARY
           echo "- Triggered by: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY

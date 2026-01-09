@@ -466,9 +466,13 @@ export async function syncServers(options: SyncOptions = {}): Promise<SyncResult
     const slug = existingServer?.slug ?? generateUniqueSlug(serverName, usedSlugs);
 
     // Parse with AI if enabled and have README
+    // Skip AI for existing servers that already have tools (unless retrying failed)
     let aiData = null;
     const hasAIKey = !!(process.env.ANTHROPIC_API_KEY || process.env.OPENROUTER_API_KEY);
-    if (!skipAI && readmeContent && hasAIKey) {
+    const existingHasTools = existingServer?.tools && Array.isArray(existingServer.tools) && existingServer.tools.length > 0;
+    const shouldRunAI = !skipAI && readmeContent && hasAIKey && (!existingHasTools || retryAIFailed);
+
+    if (shouldRunAI) {
       const inputTokens = estimateTokens(readmeContent);
       aiData = await parseServerWithAI(serverName, mergedServer.description || "", readmeContent);
       if (aiData) {
@@ -563,9 +567,12 @@ export async function syncServers(options: SyncOptions = {}): Promise<SyncResult
             name: serverName,
             description,
             readmeContent,
-            tools: aiData?.tools || [],
-            resources: aiData?.resources || [],
-            prompts: aiData?.prompts || [],
+            // Only update AI-extracted fields if we have new AI data
+            ...(aiData && {
+              tools: aiData.tools || [],
+              resources: aiData.resources || [],
+              prompts: aiData.prompts || [],
+            }),
             envConfigSchema,
             starsCount,
             forksCount,

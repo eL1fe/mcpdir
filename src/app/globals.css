@@ -43,6 +43,16 @@
   --color-glass: var(--glass);
   --color-glass-border: var(--glass-border);
 
+  /* Status colors */
+  --color-status-official: var(--status-official);
+  --color-status-official-bg: var(--status-official-bg);
+  --color-status-validated: var(--status-validated);
+  --color-status-validated-bg: var(--status-validated-bg);
+  --color-status-warning: var(--status-warning);
+  --color-status-warning-bg: var(--status-warning-bg);
+  --color-status-failed: var(--status-failed);
+  --color-status-failed-bg: var(--status-failed-bg);
+
   /* Charts */
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -148,6 +158,16 @@
 
   /* Border hover */
   --border-hover: oklch(0.45 0.03 265);
+
+  /* Status colors */
+  --status-official: oklch(0.65 0.15 230);
+  --status-official-bg: oklch(0.65 0.15 230 / 0.2);
+  --status-validated: oklch(0.72 0.19 145);
+  --status-validated-bg: oklch(0.72 0.19 145 / 0.2);
+  --status-warning: oklch(0.78 0.18 85);
+  --status-warning-bg: oklch(0.78 0.18 85 / 0.2);
+  --status-failed: oklch(0.65 0.22 25);
+  --status-failed-bg: oklch(0.65 0.22 25 / 0.2);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -212,6 +232,16 @@
 
   /* Border hover */
   --border-hover: oklch(0.75 0.02 265);
+
+  /* Status colors (light mode) */
+  --status-official: oklch(0.50 0.18 230);
+  --status-official-bg: oklch(0.50 0.18 230 / 0.15);
+  --status-validated: oklch(0.55 0.20 145);
+  --status-validated-bg: oklch(0.55 0.20 145 / 0.15);
+  --status-warning: oklch(0.60 0.20 85);
+  --status-warning-bg: oklch(0.60 0.20 85 / 0.15);
+  --status-failed: oklch(0.55 0.25 25);
+  --status-failed-bg: oklch(0.55 0.25 25 / 0.15);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

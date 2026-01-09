@@ -32,7 +32,7 @@ export interface DiscoveredServer {
   sourceData: Record<string, unknown>; // Raw API response
 }
 
-export type SourceType = "mcp-registry" | "npm" | "github" | "pypi" | "glama";
+export type SourceType = "mcp-registry" | "npm" | "github" | "pypi" | "glama" | "pulsemcp";
 
 export interface SyncSourceOptions {
   forceRefresh?: boolean;

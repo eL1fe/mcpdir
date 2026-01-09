@@ -1,0 +1,52 @@
+name: Refresh GitHub Stats
+
+on:
+  schedule:
+    - cron: '0 4 * * 0'  # Weekly on Sunday at 4am UTC
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Limit number of servers to refresh'
+        default: ''
+        type: string
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Refresh GitHub stats
+        run: |
+          if [ -n "${{ inputs.limit }}" ]; then
+            pnpm tsx scripts/refresh-github-stats.ts --limit=${{ inputs.limit }}
+          else
+            pnpm tsx scripts/refresh-github-stats.ts
+          fi
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## GitHub Stats Refresh" >> $GITHUB_STEP_SUMMARY
+          echo "- Triggered: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Limit: ${{ inputs.limit || 'none' }}" >> $GITHUB_STEP_SUMMARY
