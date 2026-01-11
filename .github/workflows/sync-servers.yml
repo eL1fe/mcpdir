@@ -23,6 +23,10 @@ on:
         description: 'Force refresh all servers'
         default: false
         type: boolean
+      enable_ai:
+        description: 'Enable AI parsing (costs money)'
+        default: false
+        type: boolean
 
 jobs:
   sync:
@@ -64,12 +68,20 @@ jobs:
       - name: Sync servers
         run: |
           SOURCES="${{ steps.sources.outputs.sources }}"
-          echo "Syncing sources: $SOURCES"
+          ARGS="--sources=$SOURCES"
+
+          # Force refresh
           if [ "${{ inputs.force }}" = "true" ]; then
-            FORCE_REFRESH=true pnpm tsx scripts/sync-servers.ts --sources=$SOURCES --force
-          else
-            pnpm tsx scripts/sync-servers.ts --sources=$SOURCES
+            ARGS="$ARGS --force"
           fi
+
+          # AI parsing: disabled by default, enabled only when manually requested
+          if [ "${{ inputs.enable_ai }}" != "true" ]; then
+            ARGS="$ARGS --skip-ai"
+          fi
+
+          echo "Running: pnpm tsx scripts/sync-servers.ts $ARGS"
+          pnpm tsx scripts/sync-servers.ts $ARGS
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           GITHUB_TOKEN: ${{ secrets.GH_PAT || github.token }}
@@ -87,4 +99,5 @@ jobs:
           echo "## Sync Summary" >> $GITHUB_STEP_SUMMARY
           echo "- Sources: ${{ steps.sources.outputs.sources }}" >> $GITHUB_STEP_SUMMARY
           echo "- Force refresh: ${{ inputs.force || 'false' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- AI parsing: ${{ inputs.enable_ai || 'false' }}" >> $GITHUB_STEP_SUMMARY
           echo "- Triggered by: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
