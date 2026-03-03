@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { serverClaims, servers, users } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { serverClaims, servers } from "@/lib/db/schema";
+import { eq, and, inArray } from "drizzle-orm";
 import { initiateClaimSchema } from "@/lib/validations/user-features";
 import { randomBytes } from "crypto";
 
@@ -41,6 +41,15 @@ export async function POST(request: NextRequest) {
       { status: 409 }
     );
   }
+
+  // Clean up expired/rejected claims for this user+server
+  await db.delete(serverClaims).where(
+    and(
+      eq(serverClaims.serverId, serverId),
+      eq(serverClaims.userId, session.user.id),
+      inArray(serverClaims.status, ["expired", "rejected"])
+    )
+  );
 
   // Check for existing pending claim by this user
   const existingClaim = await db.query.serverClaims.findFirst({
@@ -88,4 +97,46 @@ export async function POST(request: NextRequest) {
     serverGithubUrl: server.sourceUrl,
     message: "Claim initiated. Follow the verification steps.",
   });
+}
+
+export async function DELETE(request: NextRequest) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
+
+  const body = await request.json();
+  const { serverId } = body as { serverId: string };
+
+  if (!serverId) {
+    return NextResponse.json({ error: "serverId is required" }, { status: 400 });
+  }
+
+  const server = await db.query.servers.findFirst({
+    where: eq(servers.id, serverId),
+  });
+
+  if (!server) {
+    return NextResponse.json({ error: "Server not found" }, { status: 404 });
+  }
+
+  if (server.claimedBy !== session.user.id) {
+    return NextResponse.json({ error: "You are not the owner of this server" }, { status: 403 });
+  }
+
+  await db.update(servers).set({
+    claimedBy: null,
+    claimedAt: null,
+  }).where(eq(servers.id, serverId));
+
+  await db.update(serverClaims).set({ status: "revoked" }).where(
+    and(
+      eq(serverClaims.serverId, serverId),
+      eq(serverClaims.userId, session.user.id),
+      eq(serverClaims.status, "verified")
+    )
+  );
+
+  return NextResponse.json({ message: "Ownership released" });
 }

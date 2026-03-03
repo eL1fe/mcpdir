@@ -28,6 +28,20 @@ export async function getServers(options: GetServersOptions = {}) {
 
   const orderFn = order === "desc" ? desc : asc;
 
+  const conditions = [eq(servers.status, "active")];
+
+  if (categorySlug) {
+    conditions.push(
+      sql`EXISTS (SELECT 1 FROM server_categories sc JOIN categories c ON sc.category_id = c.id WHERE sc.server_id = ${servers.id} AND c.slug = ${categorySlug})`
+    );
+  }
+
+  if (tagSlugs?.length) {
+    conditions.push(
+      sql`EXISTS (SELECT 1 FROM server_tags st JOIN tags t ON st.tag_id = t.id WHERE st.server_id = ${servers.id} AND t.slug = ANY(${tagSlugs}::text[]))`
+    );
+  }
+
   const results = await db
     .select({
       server: servers,
@@ -39,24 +53,13 @@ export async function getServers(options: GetServersOptions = {}) {
     .leftJoin(categories, eq(serverCategories.categoryId, categories.id))
     .leftJoin(serverTags, eq(servers.id, serverTags.serverId))
     .leftJoin(tags, eq(serverTags.tagId, tags.id))
-    .where(eq(servers.status, "active"))
+    .where(and(...conditions))
     .groupBy(servers.id)
     .orderBy(orderFn(sortColumn))
     .limit(limit)
     .offset(offset);
 
-  // Filter by category/tags in memory for now (simpler than subqueries)
-  let filtered = results;
-
-  if (categorySlug) {
-    filtered = filtered.filter((r) => r.categories?.includes(categorySlug));
-  }
-
-  if (tagSlugs?.length) {
-    filtered = filtered.filter((r) => tagSlugs.some((t) => r.tags?.includes(t)));
-  }
-
-  return filtered.map((r) => ({
+  return results.map((r) => ({
     ...r.server,
     categories: r.categories?.filter(Boolean) ?? [],
     tags: r.tags?.filter(Boolean) ?? [],
@@ -71,6 +74,7 @@ export async function getServerBySlug(slug: string) {
       categoryNames: sql<string[]>`array_agg(DISTINCT ${categories.name})`.as("categoryNames"),
       tags: sql<string[]>`array_agg(DISTINCT ${tags.slug})`.as("tags"),
       tagNames: sql<string[]>`array_agg(DISTINCT ${tags.name})`.as("tagNames"),
+      claimedByUsername: sql<string | null>`(SELECT github_username FROM users WHERE id = ${servers.claimedBy} LIMIT 1)`.as("claimedByUsername"),
     })
     .from(servers)
     .leftJoin(serverCategories, eq(servers.id, serverCategories.serverId))
@@ -90,6 +94,7 @@ export async function getServerBySlug(slug: string) {
     categoryNames: r.categoryNames?.filter(Boolean) ?? [],
     tags: r.tags?.filter(Boolean) ?? [],
     tagNames: r.tagNames?.filter(Boolean) ?? [],
+    claimedByUsername: r.claimedByUsername,
   };
 }
 

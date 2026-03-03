@@ -140,7 +140,7 @@ export default async function ServersPage({ searchParams }: Props) {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="mt-12 flex items-center justify-center gap-2">
+              <nav aria-label="Pagination" className="mt-12 flex items-center justify-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
@@ -178,6 +178,7 @@ export default async function ServersPage({ searchParams }: Props) {
                       <Link
                         key={pageNum}
                         href={buildPageUrl(pageNum)}
+                        aria-current={pageNum === page ? "page" : undefined}
                         className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-medium transition-colors ${
                           pageNum === page
                             ? "bg-cyan/20 text-cyan border border-cyan/30"
@@ -209,7 +210,7 @@ export default async function ServersPage({ searchParams }: Props) {
                     </span>
                   )}
                 </Button>
-              </div>
+              </nav>
             )}
           </>
         ) : (

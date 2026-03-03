@@ -2,6 +2,7 @@
 
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
+import Image from "next/image";
 import { LogIn, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,10 +42,12 @@ export function UserMenu() {
           className="gap-2 px-2"
         >
           {session.user.image ? (
-            <img
+            <Image
               src={session.user.image}
               alt={session.user.name ?? "User"}
-              className="h-6 w-6 rounded-full"
+              width={24}
+              height={24}
+              className="rounded-full"
             />
           ) : (
             <User className="h-4 w-4" />

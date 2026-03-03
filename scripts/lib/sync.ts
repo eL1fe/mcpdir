@@ -202,6 +202,16 @@ interface GitHubRepoResult {
   wasRedirected: boolean;
 }
 
+async function checkRateLimit(response: Response) {
+  const remaining = parseInt(response.headers.get("x-ratelimit-remaining") ?? "999", 10);
+  if (remaining < 100) {
+    const resetAt = parseInt(response.headers.get("x-ratelimit-reset") ?? "0", 10) * 1000;
+    const waitMs = Math.max(0, resetAt - Date.now()) + 1000;
+    console.warn(`GitHub rate limit low (${remaining} remaining), pausing ${Math.round(waitMs / 1000)}s...`);
+    await new Promise((r) => setTimeout(r, Math.min(waitMs, 60_000)));
+  }
+}
+
 async function fetchGitHubRepo(owner: string, repo: string): Promise<GitHubRepoResult | null> {
   try {
     const headers: Record<string, string> = {
@@ -213,17 +223,20 @@ async function fetchGitHubRepo(owner: string, repo: string): Promise<GitHubRepoR
       headers.Authorization = `Bearer ${token}`;
     }
 
-    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers });
+    let response = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers });
 
-    if (!response.ok) {
-      if (response.status === 403) {
-        const remaining = response.headers.get("x-ratelimit-remaining");
-        if (remaining === "0") {
-          console.warn("GitHub rate limit exceeded");
-        }
-      }
-      return null;
+    if (response.status === 403) {
+      // rate limit or abuse detection - backoff and retry once
+      const retryAfter = parseInt(response.headers.get("retry-after") ?? "0", 10);
+      const waitMs = retryAfter > 0 ? retryAfter * 1000 : 30_000;
+      console.warn(`GitHub 403 for ${owner}/${repo}, retrying in ${Math.round(waitMs / 1000)}s...`);
+      await new Promise((r) => setTimeout(r, waitMs));
+      response = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers });
     }
+
+    if (!response.ok) return null;
+
+    await checkRateLimit(response);
 
     const data: GitHubRepo = await response.json();
 
@@ -455,14 +468,18 @@ export async function syncServers(options: SyncOptions = {}): Promise<SyncResult
           if (repoResult.wasRedirected) {
             console.log(`  ↪ Redirect: ${canonicalUrl} → ${repoResult.canonicalUrl}`);
 
-            // If the canonical URL already exists, skip this entry (it's a duplicate)
             if (existingByUrl.has(repoResult.canonicalUrl)) {
-              console.log(`    Skipping duplicate (canonical entry exists)`);
+              // Canonical URL already in DB - mark old entry as redirect
+              const oldEntry = existingByUrl.get(canonicalUrl);
+              if (oldEntry) {
+                await getDb().update(servers).set({ status: "redirect" }).where(eq(servers.id, oldEntry.id));
+                console.log(`    Marked old entry as redirect`);
+              }
               result.skipped++;
               return;
             }
 
-            // Update to use the correct canonical URL
+            // Canonical URL not in DB - update source_url of current entry
             canonicalUrl = repoResult.canonicalUrl;
             const parsed = parseGitHubUrl(canonicalUrl);
             if (parsed) {
@@ -630,25 +647,25 @@ export async function syncServers(options: SyncOptions = {}): Promise<SyncResult
           });
       }
 
-      // Clear old relations
-      await getDb().delete(serverCategories).where(eq(serverCategories.serverId, inserted.id));
-      await getDb().delete(serverTags).where(eq(serverTags.serverId, inserted.id));
+      // Atomically replace categories and tags
+      await getDb().transaction(async (tx) => {
+        await tx.delete(serverCategories).where(eq(serverCategories.serverId, inserted.id));
+        await tx.delete(serverTags).where(eq(serverTags.serverId, inserted.id));
 
-      // Link categories
-      for (const catSlug of allCats) {
-        const catId = categoryMap.get(catSlug);
-        if (catId) {
-          await getDb().insert(serverCategories).values({ serverId: inserted.id, categoryId: catId }).onConflictDoNothing();
+        for (const catSlug of allCats) {
+          const catId = categoryMap.get(catSlug);
+          if (catId) {
+            await tx.insert(serverCategories).values({ serverId: inserted.id, categoryId: catId }).onConflictDoNothing();
+          }
         }
-      }
 
-      // Link tags
-      for (const tagSlug of serverTagSlugs) {
-        const tagId = tagMap.get(tagSlug);
-        if (tagId) {
-          await getDb().insert(serverTags).values({ serverId: inserted.id, tagId }).onConflictDoNothing();
+        for (const tagSlug of serverTagSlugs) {
+          const tagId = tagMap.get(tagSlug);
+          if (tagId) {
+            await tx.insert(serverTags).values({ serverId: inserted.id, tagId }).onConflictDoNothing();
+          }
         }
-      }
+      });
 
       result.updated++;
       if (isNew) result.newServers++;

@@ -95,7 +95,7 @@ export async function POST(
         );
       }
       // No shell metacharacters in values
-      if (/[;&|`$]/.test(value)) {
+      if (/[;&|`$\n\r'"\\<>*?~(){}[\]#!]/.test(value)) {
         return NextResponse.json(
           { error: `Credential value for ${key} contains invalid characters` },
           { status: 400 }

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { serverClaims, servers, users } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { verifyClaimSchema } from "@/lib/validations/user-features";
 import { checkFileExists, parseGitHubUrl, getRepoOwnerUsername } from "@/lib/github";
 
@@ -63,19 +63,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Server not found" }, { status: 404 });
   }
 
-  // Check if server was claimed by someone else in the meantime
-  if (server.claimedBy) {
-    await db
-      .update(serverClaims)
-      .set({ status: "rejected" })
-      .where(eq(serverClaims.id, claimId));
-
-    return NextResponse.json(
-      { error: "This server has already been claimed by another user" },
-      { status: 409 }
-    );
-  }
-
   const user = await db.query.users.findFirst({
     where: eq(users.id, session.user.id),
   });
@@ -106,7 +93,7 @@ export async function POST(request: NextRequest) {
       "mcp-hub-verify.txt"
     );
 
-    if (fileCheck.exists && fileCheck.content?.includes(claim.verificationToken)) {
+    if (fileCheck.exists && fileCheck.content?.trim() === claim.verificationToken) {
       verified = true;
     }
   } else if (claim.verificationMethod === "github_owner") {
@@ -127,24 +114,24 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  // Mark claim as verified and update server
-  await db.transaction(async (tx) => {
-    await tx
-      .update(serverClaims)
-      .set({
-        status: "verified",
-        verifiedAt: new Date(),
-      })
-      .where(eq(serverClaims.id, claimId));
+  // Atomic check-and-set: only claim if not already claimed
+  const [updated] = await db.update(servers).set({
+    claimedBy: session.user.id,
+    claimedAt: new Date(),
+  }).where(and(
+    eq(servers.id, claim.serverId),
+    sql`${servers.claimedBy} IS NULL`
+  )).returning({ id: servers.id });
 
-    await tx
-      .update(servers)
-      .set({
-        claimedBy: session.user.id,
-        claimedAt: new Date(),
-      })
-      .where(eq(servers.id, claim.serverId));
-  });
+  if (!updated) {
+    await db.update(serverClaims).set({ status: "rejected" })
+      .where(eq(serverClaims.id, claimId));
+    return NextResponse.json({ error: "Server already claimed" }, { status: 409 });
+  }
+
+  await db.update(serverClaims).set({
+    status: "verified", verifiedAt: new Date(),
+  }).where(eq(serverClaims.id, claimId));
 
   return NextResponse.json({
     message: "Verification successful! You are now the maintainer of this server.",

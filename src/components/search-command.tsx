@@ -152,6 +152,11 @@ export function SearchCommand({
         <input
           ref={inputRef}
           type="text"
+          role="combobox"
+          aria-expanded={showDropdown}
+          aria-controls="search-results"
+          aria-autocomplete="list"
+          aria-activedescendant={selectedIndex >= 0 ? `search-result-${selectedIndex}` : undefined}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setIsOpen(true)}
@@ -189,9 +194,9 @@ export function SearchCommand({
           )}
         >
           {results.length > 0 ? (
-            <ul className="py-2">
+            <ul id="search-results" role="listbox" className="py-2">
               {results.map((server, index) => (
-                <li key={server.slug}>
+                <li key={server.slug} id={`search-result-${index}`} role="option" aria-selected={selectedIndex === index}>
                   <button
                     onClick={() => navigateToServer(server.slug)}
                     onMouseEnter={() => setSelectedIndex(index)}

@@ -62,12 +62,13 @@ export function FilterBar({ categories }: FilterBarProps) {
   return (
     <div className="space-y-4">
       {/* Categories */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by category">
         <Button
           variant={!currentCategory ? "default" : "outline"}
           size="sm"
           onClick={() => updateParams({ category: null })}
           disabled={isPending}
+          aria-pressed={!currentCategory}
         >
           All
         </Button>
@@ -78,6 +79,7 @@ export function FilterBar({ categories }: FilterBarProps) {
             size="sm"
             onClick={() => updateParams({ category: currentCategory === cat.slug ? null : cat.slug })}
             disabled={isPending}
+            aria-pressed={currentCategory === cat.slug}
           >
             {cat.name}
           </Button>
@@ -85,7 +87,7 @@ export function FilterBar({ categories }: FilterBarProps) {
       </div>
 
       {/* Sort */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2" role="group" aria-label="Sort options">
         <span className="text-sm text-muted-foreground">Sort:</span>
         {SORT_OPTIONS.filter((opt) => !opt.searchOnly || hasQuery).map((opt) => (
           <Button
@@ -94,6 +96,7 @@ export function FilterBar({ categories }: FilterBarProps) {
             size="sm"
             onClick={() => updateParams({ sort: opt.value })}
             disabled={isPending}
+            aria-pressed={currentSort === opt.value}
           >
             {opt.label}
           </Button>

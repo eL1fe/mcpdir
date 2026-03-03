@@ -318,6 +318,7 @@ export default async function ServerDetailPage({ params }: Props) {
                       serverName={server.name}
                       githubUrl={server.sourceUrl}
                       claimedBy={server.claimedBy}
+                      claimedByUsername={server.claimedByUsername}
                     />
                   </div>
 

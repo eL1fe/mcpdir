@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Shield, Loader2, CheckCircle2, Copy, Check } from "lucide-react";
 import {
@@ -36,6 +37,7 @@ export function ClaimButton({
   claimedByUsername,
 }: ClaimButtonProps) {
   const { data: session } = useSession();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [step, setStep] = useState<Step>("method");
@@ -64,11 +66,32 @@ export function ClaimButton({
 
   // If claimed by current user
   if (claimedBy && session?.user?.id === claimedBy) {
+    const handleUnclaim = async () => {
+      startTransition(async () => {
+        try {
+          const res = await fetch("/api/claims", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ serverId }),
+          });
+          if (res.ok) {
+            router.refresh();
+          }
+        } catch {}
+      });
+    };
+
     return (
-      <Badge variant="secondary" className="gap-1 bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
-        <Shield className="h-3 w-3" />
-        You maintain this server
-      </Badge>
+      <div className="space-y-2">
+        <Badge variant="secondary" className="gap-1 bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+          <Shield className="h-3 w-3" />
+          You maintain this server
+        </Badge>
+        <Button variant="ghost" size="sm" onClick={handleUnclaim} disabled={isPending} className="text-xs text-muted-foreground">
+          {isPending ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+          Release ownership
+        </Button>
+      </div>
     );
   }
 

@@ -10,8 +10,8 @@ export async function GET(request: NextRequest) {
   const tags = tagsParam ? tagsParam.split(",").filter(Boolean) : undefined;
   const sort = (searchParams.get("sort") as SortOption) || (query ? "relevance" : "stars");
   const order = (searchParams.get("order") as "asc" | "desc") ?? "desc";
-  const page = parseInt(searchParams.get("page") ?? "1", 10);
-  const limit = Math.min(parseInt(searchParams.get("limit") ?? "20", 10), 100);
+  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
+  const limit = Math.max(1, Math.min(parseInt(searchParams.get("limit") ?? "20", 10) || 20, 100));
 
   const result = await searchServers({
     query,
