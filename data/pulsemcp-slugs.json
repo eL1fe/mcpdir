@@ -1,5 +1,16 @@
 [
   {
+    "slug": "xquik-x-twitter-scraper",
+    "name": "Xquik — X (Twitter) Data Platform",
+    "description": "MCP (Model Context Protocol) Server. X (Twitter) data platform with 9 MCP tools, 99 REST API endpoints, HMAC webhooks, and MPP pay-per-use. Tweet search, user lookup, follower/following extraction, engagement analytics, trending topics. Reads from $0.00015/call — 33x cheaper than the official X API.",
+    "githubUrl": "https://github.com/Xquik-dev/x-twitter-scraper",
+    "starsCount": 0,
+    "classification": "community",
+    "providerUrl": "https://xquik.com",
+    "provider": "Xquik",
+    "serverId": "com.xquik/x-twitter-scraper"
+  },
+  {
     "slug": "microsoft-playwright-browser-automation",
     "name": "Playwright Browser Automation",
     "description": "MCP (Model Context Protocol) Server. Enables web browser control for navigating websites, capturing page snapshots, interacting with elements, and taking screenshots through Playwright's automation capabilities.",
