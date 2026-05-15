@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { users, reviews, submissions, servers } from "@/lib/db/schema";
@@ -6,11 +7,15 @@ import { eq, count, desc, and } from "drizzle-orm";
 import { ProfileHeader, ProfileTabs } from "@/components/profile";
 import { SITE_URL } from "@/lib/seo";
 
+export const revalidate = 3600;
+export const dynamic = "force-static";
+export const dynamicParams = true;
+
 interface Props {
   params: Promise<{ username: string }>;
 }
 
-async function getUser(username: string) {
+const getUser = cache(async function getUser(username: string) {
   const user = await db.query.users.findFirst({
     where: eq(users.githubUsername, username),
     columns: {
@@ -43,7 +48,7 @@ async function getUser(username: string) {
       claimedServers: Number(claimedServersCount[0]?.count || 0),
     },
   };
-}
+});
 
 async function getUserReviews(userId: string) {
   return db

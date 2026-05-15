@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { users, reviews, submissions, servers, serverClaims } from "@/lib/db/schema";
+import { users, reviews, submissions, servers } from "@/lib/db/schema";
 import { eq, count, desc, and } from "drizzle-orm";
+import { CACHE_CONTROL } from "@/lib/cache";
+
+export const revalidate = 3600;
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   context: { params: Promise<{ username: string }> }
 ) {
   const params = await context.params;
@@ -44,6 +47,8 @@ export async function GET(
       submissions: Number(submissionsCount[0]?.count || 0),
       claimedServers: Number(claimedServersCount[0]?.count || 0),
     },
+  }, {
+    headers: { "Cache-Control": CACHE_CONTROL.medium },
   });
 }
 

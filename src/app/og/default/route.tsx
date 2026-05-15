@@ -1,6 +1,8 @@
 import { ImageResponse } from "next/og";
+import { CACHE_CONTROL } from "@/lib/cache";
 
 export const runtime = "edge";
+export const revalidate = 604800;
 
 export async function GET() {
   return new ImageResponse(
@@ -98,6 +100,7 @@ export async function GET() {
     {
       width: 1200,
       height: 630,
+      headers: { "Cache-Control": CACHE_CONTROL.week },
     }
   );
 }

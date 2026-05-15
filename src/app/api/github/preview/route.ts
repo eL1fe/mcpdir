@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { parseGitHubUrl, fetchRepoMetadata, isGitHubError } from "@/lib/github";
+import { CACHE_CONTROL } from "@/lib/cache";
+
+export const revalidate = 3600;
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -20,5 +23,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: metadata.message }, { status: metadata.status });
   }
 
-  return NextResponse.json(metadata);
+  return NextResponse.json(metadata, {
+    headers: { "Cache-Control": CACHE_CONTROL.medium },
+  });
 }

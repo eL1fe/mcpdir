@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { getStats } from "@/lib/db/queries";
+import { CACHE_CONTROL } from "@/lib/cache";
 
-export const revalidate = 60; // Revalidate every 60 seconds
+export const revalidate = 3600;
 
 export async function GET() {
   const stats = await getStats();
-  return NextResponse.json(stats);
+  return NextResponse.json(stats, {
+    headers: { "Cache-Control": CACHE_CONTROL.medium },
+  });
 }

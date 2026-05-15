@@ -21,6 +21,8 @@ import { Button } from "@/components/ui/button";
 import { GradientText } from "@/components/ui/gradient-text";
 import { SITE_URL } from "@/lib/seo";
 
+export const revalidate = 86400;
+
 interface Props {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ page?: string }>;

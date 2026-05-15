@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { users, reviews, servers } from "@/lib/db/schema";
 import { eq, desc, count } from "drizzle-orm";
+import { CACHE_CONTROL } from "@/lib/cache";
+
+export const revalidate = 300;
 
 export async function GET(
   request: NextRequest,
@@ -57,5 +60,7 @@ export async function GET(
       total: Number(totalResult[0]?.count || 0),
       totalPages: Math.ceil(Number(totalResult[0]?.count || 0) / limit),
     },
+  }, {
+    headers: { "Cache-Control": CACHE_CONTROL.short },
   });
 }

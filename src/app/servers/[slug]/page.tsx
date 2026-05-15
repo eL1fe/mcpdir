@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
@@ -33,13 +34,19 @@ import { ReportDialog } from "@/components/reports";
 import { ClaimButton } from "@/components/claims";
 import { SITE_URL, generateServerSchema, generateBreadcrumbSchema } from "@/lib/seo";
 
+export const revalidate = 86400;
+export const dynamic = "force-static";
+export const dynamicParams = true;
+
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
+const getCachedServerBySlug = cache(getServerBySlug);
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const server = await getServerBySlug(slug);
+  const server = await getCachedServerBySlug(slug);
 
   if (!server) {
     return {
@@ -93,7 +100,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ServerDetailPage({ params }: Props) {
   const { slug } = await params;
-  const server = await getServerBySlug(slug);
+  const server = await getCachedServerBySlug(slug);
 
   if (!server) {
     notFound();

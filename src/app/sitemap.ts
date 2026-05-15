@@ -4,6 +4,13 @@ import { servers, categories } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { SITE_URL } from "@/lib/seo";
 
+export const revalidate = 86400;
+
+const SITEMAP_SERVER_LIMIT = Math.max(
+  100,
+  Math.min(Number(process.env.SITEMAP_SERVER_LIMIT ?? 2000), 5000)
+);
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [
     {
@@ -34,7 +41,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })
     .from(servers)
     .where(eq(servers.status, "active"))
-    .orderBy(desc(servers.starsCount));
+    .orderBy(desc(servers.starsCount))
+    .limit(SITEMAP_SERVER_LIMIT);
 
   const serverPages: MetadataRoute.Sitemap = allServers.map((server) => ({
     url: `${SITE_URL}/servers/${server.slug}`,

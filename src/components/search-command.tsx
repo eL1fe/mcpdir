@@ -34,7 +34,9 @@ export function SearchCommand({
   useEffect(() => {
     abortRef.current?.abort();
 
-    if (!query.trim()) {
+    const trimmedQuery = query.trim();
+
+    if (trimmedQuery.length < 2) {
       setResults([]);
       setIsLoading(false);
       return;
@@ -47,7 +49,7 @@ export function SearchCommand({
     const timeoutId = setTimeout(async () => {
       try {
         const res = await fetch(
-          `/api/servers/preview?q=${encodeURIComponent(query.trim())}`,
+          `/api/servers/preview?q=${encodeURIComponent(trimmedQuery)}`,
           { signal: controller.signal }
         );
         const data = await res.json();

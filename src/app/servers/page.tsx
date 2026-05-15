@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import { GradientText } from "@/components/ui/gradient-text";
 import { SITE_URL } from "@/lib/seo";
 
+export const revalidate = 3600;
+
 interface Props {
   searchParams: Promise<{
     q?: string;
@@ -24,7 +26,8 @@ interface Props {
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const params = await searchParams;
-  const query = params.q;
+  const rawQuery = params.q?.trim();
+  const query = rawQuery && rawQuery.length >= 2 ? rawQuery : undefined;
   const category = params.category;
   const page = parseInt(params.page || "1", 10);
 
@@ -57,7 +60,8 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 export default async function ServersPage({ searchParams }: Props) {
   const params = await searchParams;
 
-  const query = params.q;
+  const rawQuery = params.q?.trim();
+  const query = rawQuery && rawQuery.length >= 2 ? rawQuery : undefined;
   const categorySlug = params.category;
   const tagSlugs = params.tags?.split(",").filter(Boolean);
   const sort = (params.sort as SortOption) || (query ? "relevance" : "stars");

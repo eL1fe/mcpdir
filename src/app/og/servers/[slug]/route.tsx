@@ -1,12 +1,14 @@
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
-import { getServerBySlug } from "@/lib/db/queries";
+import { getServerOgBySlug } from "@/lib/db/queries";
+import { CACHE_CONTROL } from "@/lib/cache";
 
 export const runtime = "edge";
+export const revalidate = 604800;
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const server = await getServerBySlug(slug);
+  const server = await getServerOgBySlug(slug);
 
   if (!server) {
     return new Response("Not found", { status: 404 });
@@ -172,6 +174,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     {
       width: 1200,
       height: 630,
+      headers: { "Cache-Control": CACHE_CONTROL.week },
     }
   );
 }

@@ -1,11 +1,65 @@
 import { db } from ".";
 import { servers, categories, tags, serverCategories, serverTags } from "./schema";
-import { eq, desc, asc, sql, and, inArray } from "drizzle-orm";
+import { eq, desc, asc, sql, and } from "drizzle-orm";
 
 export type SortOption = "stars" | "updated" | "name" | "relevance";
 export type SortOrder = "asc" | "desc";
 
 type ListSortOption = "stars" | "updated" | "name";
+
+const serverListColumns = {
+  id: servers.id,
+  slug: servers.slug,
+  name: servers.name,
+  description: servers.description,
+  sourceType: servers.sourceType,
+  sourceUrl: servers.sourceUrl,
+  homepageUrl: servers.homepageUrl,
+  packageName: servers.packageName,
+  packageRegistry: servers.packageRegistry,
+  latestVersion: servers.latestVersion,
+  installCommand: servers.installCommand,
+  tools: servers.tools,
+  resources: servers.resources,
+  prompts: servers.prompts,
+  capabilities: servers.capabilities,
+  starsCount: servers.starsCount,
+  forksCount: servers.forksCount,
+  lastCommitAt: servers.lastCommitAt,
+  status: servers.status,
+  contentHash: servers.contentHash,
+  lastSyncedAt: servers.lastSyncedAt,
+  validatedAt: servers.validatedAt,
+  validationStatus: servers.validationStatus,
+  validationDurationMs: servers.validationDurationMs,
+  discoveredSources: servers.discoveredSources,
+  npmDownloads: servers.npmDownloads,
+  averageRating: servers.averageRating,
+  reviewsCount: servers.reviewsCount,
+  createdAt: servers.createdAt,
+  updatedAt: servers.updatedAt,
+};
+
+function withListDefaults<T extends Record<string, unknown>>(server: T) {
+  return {
+    ...server,
+    readmeContent: null,
+    registryData: null,
+    validationResult: null,
+    validationError: null,
+    githubRepoId: null,
+    npmQualityScore: null,
+    envConfigSchema: null,
+    glamaSlug: null,
+    glamaQualityScore: null,
+    glamaSecurityScore: null,
+    glamaLicenseScore: null,
+    supportedPlatforms: null,
+    glamaEnrichedAt: null,
+    claimedBy: null,
+    claimedAt: null,
+  };
+}
 
 interface GetServersOptions {
   categorySlug?: string;
@@ -44,7 +98,7 @@ export async function getServers(options: GetServersOptions = {}) {
 
   const results = await db
     .select({
-      server: servers,
+      server: serverListColumns,
       categories: sql<string[]>`array_agg(DISTINCT ${categories.slug})`.as("categories"),
       tags: sql<string[]>`array_agg(DISTINCT ${tags.slug})`.as("tags"),
     })
@@ -60,7 +114,7 @@ export async function getServers(options: GetServersOptions = {}) {
     .offset(offset);
 
   return results.map((r) => ({
-    ...r.server,
+    ...withListDefaults(r.server),
     categories: r.categories?.filter(Boolean) ?? [],
     tags: r.tags?.filter(Boolean) ?? [],
   }));
@@ -141,32 +195,26 @@ export async function getServersByCategory(categorySlug: string, limit = 20, pag
   const category = await getCategoryBySlug(categorySlug);
   if (!category) return { servers: [], total: 0 };
 
-  const serverIds = await db
-    .select({ serverId: serverCategories.serverId })
-    .from(serverCategories)
-    .where(eq(serverCategories.categoryId, category.id));
-
-  if (!serverIds.length) return { servers: [], total: 0 };
-
-  const ids = serverIds.map((s) => s.serverId);
   const offset = (page - 1) * limit;
 
   const [serverList, countResult] = await Promise.all([
     db
-      .select()
+      .select({ server: serverListColumns })
       .from(servers)
-      .where(and(eq(servers.status, "active"), inArray(servers.id, ids)))
+      .innerJoin(serverCategories, eq(servers.id, serverCategories.serverId))
+      .where(and(eq(servers.status, "active"), eq(serverCategories.categoryId, category.id)))
       .orderBy(desc(servers.starsCount))
       .limit(limit)
       .offset(offset),
     db
       .select({ count: sql<number>`count(*)::int` })
       .from(servers)
-      .where(and(eq(servers.status, "active"), inArray(servers.id, ids))),
+      .innerJoin(serverCategories, eq(servers.id, serverCategories.serverId))
+      .where(and(eq(servers.status, "active"), eq(serverCategories.categoryId, category.id))),
   ]);
 
   return {
-    servers: serverList,
+    servers: serverList.map((r) => withListDefaults(r.server)),
     total: countResult[0]?.count ?? 0,
   };
 }
@@ -182,11 +230,12 @@ interface SearchServersOptions {
 }
 
 export async function searchServers(options: SearchServersOptions = {}) {
+  const normalizedQuery = options.query?.trim();
+  const searchQuery = normalizedQuery && normalizedQuery.length >= 2 ? normalizedQuery : undefined;
   const {
-    query,
     categorySlug,
     tagSlugs,
-    sort = query ? "relevance" : "stars",
+    sort = searchQuery ? "relevance" : "stars",
     order = "desc",
     page = 1,
     limit = 20,
@@ -199,13 +248,42 @@ export async function searchServers(options: SearchServersOptions = {}) {
   // Base SELECT
   chunks.push(sql`
     SELECT
-      s.*,
+      s.id,
+      s.slug,
+      s.name,
+      s.description,
+      s.source_type,
+      s.source_url,
+      s.homepage_url,
+      s.package_name,
+      s.package_registry,
+      s.latest_version,
+      s.install_command,
+      s.tools,
+      s.resources,
+      s.prompts,
+      s.capabilities,
+      s.stars_count,
+      s.forks_count,
+      s.last_commit_at,
+      s.status,
+      s.content_hash,
+      s.last_synced_at,
+      s.validated_at,
+      s.validation_status,
+      s.validation_duration_ms,
+      s.discovered_sources,
+      s.npm_downloads,
+      s.average_rating,
+      s.reviews_count,
+      s.created_at,
+      s.updated_at,
       array_agg(DISTINCT c.slug) FILTER (WHERE c.slug IS NOT NULL) as categories,
       array_agg(DISTINCT t.slug) FILTER (WHERE t.slug IS NOT NULL) as tags
   `);
 
-  if (query?.trim()) {
-    chunks.push(sql`, ts_rank(s.search_vector, plainto_tsquery('english', ${query.trim()})) as relevance`);
+  if (searchQuery) {
+    chunks.push(sql`, ts_rank(s.search_vector, plainto_tsquery('english', ${searchQuery})) as relevance`);
   }
 
   // FROM and JOINs
@@ -219,12 +297,12 @@ export async function searchServers(options: SearchServersOptions = {}) {
   `);
 
   // Search condition (hybrid: FTS + trigram for substring matching)
-  if (query?.trim()) {
-    const q = query.trim();
+  if (searchQuery) {
+    const q = searchQuery;
     chunks.push(sql` AND (
       s.search_vector @@ plainto_tsquery('english', ${q})
       OR s.name ILIKE ${'%' + q + '%'}
-      OR s.description ILIKE ${'%' + q + '%'}
+      OR s.package_name ILIKE ${'%' + q + '%'}
     )`);
   }
 
@@ -250,7 +328,7 @@ export async function searchServers(options: SearchServersOptions = {}) {
   chunks.push(sql` GROUP BY s.id`);
 
   // ORDER BY
-  if (sort === "relevance" && query?.trim()) {
+  if (sort === "relevance" && searchQuery) {
     if (order === "asc") {
       chunks.push(sql` ORDER BY relevance ASC, s.stars_count DESC`);
     } else {
@@ -276,12 +354,12 @@ export async function searchServers(options: SearchServersOptions = {}) {
     sql`SELECT COUNT(DISTINCT s.id)::int as total FROM servers s WHERE s.status = 'active'`,
   ];
 
-  if (query?.trim()) {
-    const q = query.trim();
+  if (searchQuery) {
+    const q = searchQuery;
     countChunks.push(sql` AND (
       s.search_vector @@ plainto_tsquery('english', ${q})
       OR s.name ILIKE ${'%' + q + '%'}
-      OR s.description ILIKE ${'%' + q + '%'}
+      OR s.package_name ILIKE ${'%' + q + '%'}
     )`);
   }
 
@@ -317,7 +395,7 @@ export async function searchServers(options: SearchServersOptions = {}) {
       packageName: row.package_name as string | null,
       packageRegistry: row.package_registry as string | null,
       latestVersion: row.latest_version as string | null,
-      readmeContent: row.readme_content as string | null,
+      readmeContent: null,
       installCommand: row.install_command as string | null,
       tools: row.tools as { name: string; description?: string }[],
       resources: row.resources as { uri: string; name?: string; description?: string }[],
@@ -331,14 +409,16 @@ export async function searchServers(options: SearchServersOptions = {}) {
       updatedAt: row.updated_at as Date,
       contentHash: row.content_hash as string | null,
       lastSyncedAt: row.last_synced_at as Date | null,
-      registryData: row.registry_data as Record<string, unknown> | null,
+      registryData: null,
       validatedAt: row.validated_at as Date | null,
       validationStatus: row.validation_status as string | null,
-      validationResult: row.validation_result as Record<string, unknown> | null,
-      validationError: row.validation_error as string | null,
+      validationResult: null,
+      validationError: null,
       validationDurationMs: row.validation_duration_ms as number | null,
       discoveredSources: row.discovered_sources as string[] | null,
       npmDownloads: row.npm_downloads as number | null,
+      averageRating: row.average_rating as string | null,
+      reviewsCount: row.reviews_count as number | null,
       categories: (row.categories as string[] | null) ?? [],
       tags: (row.tags as string[] | null) ?? [],
     })),
@@ -358,16 +438,16 @@ export interface ServerPreview {
 
 export async function searchServersPreview(query: string, limit = 3): Promise<ServerPreview[]> {
   const q = query.trim();
-  if (!q) return [];
+  if (q.length < 2) return [];
 
-  // Hybrid search: FTS for relevance + trigram for substring matching
+  // Keep typeahead cheap: FTS plus small text columns, no README/description scans.
   const results = await db.execute(sql`
     SELECT slug, name, description, stars_count
     FROM servers
     WHERE status = 'active' AND (
       search_vector @@ plainto_tsquery('english', ${q})
       OR name ILIKE ${'%' + q + '%'}
-      OR description ILIKE ${'%' + q + '%'}
+      OR package_name ILIKE ${'%' + q + '%'}
     )
     ORDER BY
       CASE WHEN name ILIKE ${q + '%'} THEN 0 ELSE 1 END,
@@ -432,7 +512,7 @@ export async function getPopularSearches(limit = 10) {
 export async function getPopularServers(limit = 6) {
   const results = await db
     .select({
-      server: servers,
+      server: serverListColumns,
       categories: sql<string[]>`array_agg(DISTINCT ${categories.slug})`.as("categories"),
       tags: sql<string[]>`array_agg(DISTINCT ${tags.slug})`.as("tags"),
     })
@@ -447,8 +527,24 @@ export async function getPopularServers(limit = 6) {
     .limit(limit);
 
   return results.map((r) => ({
-    ...r.server,
+    ...withListDefaults(r.server),
     categories: r.categories?.filter(Boolean) || [],
     tags: r.tags?.filter(Boolean) || [],
   }));
+}
+
+export async function getServerOgBySlug(slug: string) {
+  const result = await db
+    .select({
+      name: servers.name,
+      description: servers.description,
+      tools: servers.tools,
+      starsCount: servers.starsCount,
+      validationStatus: servers.validationStatus,
+    })
+    .from(servers)
+    .where(eq(servers.slug, slug))
+    .limit(1);
+
+  return result[0] ?? null;
 }

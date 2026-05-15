@@ -2,8 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { reviews, servers, users } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
+import { CACHE_CONTROL } from "@/lib/cache";
 
 type RouteContext = { params: Promise<{ slug: string }> };
+
+export const revalidate = 300;
 
 export async function GET(request: NextRequest, context: RouteContext) {
   const { slug } = await context.params;
@@ -50,5 +53,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     page,
     limit,
     hasMore: offset + serverReviews.length < (server.reviewsCount ?? 0),
+  }, {
+    headers: { "Cache-Control": CACHE_CONTROL.short },
   });
 }

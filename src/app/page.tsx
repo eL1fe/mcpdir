@@ -25,6 +25,8 @@ import { AnimatedCounter } from "@/components/animated-counter";
 import { getServers, getCategories, getStats } from "@/lib/db/queries";
 import { SITE_CONFIG, SITE_URL } from "@/lib/seo";
 
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: `${SITE_CONFIG.name} — The Largest Open MCP Server Directory`,
   description:
