@@ -13,9 +13,10 @@
  */
 
 import { config } from "dotenv";
-import { eq, isNotNull, and, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "../src/lib/db/client";
 import { servers } from "../src/lib/db/schema";
+import { parseGitHubUrl } from "./lib/sources/base";
 
 config({ path: ".env.local" });
 
@@ -85,12 +86,11 @@ async function main() {
     .select({
       id: servers.id,
       slug: servers.slug,
-      githubOwner: servers.githubOwner,
-      githubRepo: servers.githubRepo,
-      stars: servers.stars,
+      sourceUrl: servers.sourceUrl,
+      stars: servers.starsCount,
     })
     .from(servers)
-    .where(and(isNotNull(servers.githubOwner), isNotNull(servers.githubRepo)))
+    .where(sql`${servers.sourceUrl} LIKE 'https://github.com/%'`)
     .orderBy(sql`${servers.updatedAt} ASC NULLS FIRST`);
 
   const allServers = limit ? await query.limit(limit) : await query;
@@ -106,9 +106,14 @@ async function main() {
     console.log(`Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(allServers.length / batchSize)}...`);
 
     for (const server of batch) {
+      const repo = parseGitHubUrl(server.sourceUrl);
+      if (!repo) {
+        failed++;
+        continue;
+      }
       await delay(DELAY_MS);
 
-      const stats = await fetchRepoStats(server.githubOwner!, server.githubRepo!);
+      const stats = await fetchRepoStats(repo.owner, repo.repo);
 
       if (!stats) {
         failed++;
@@ -126,8 +131,9 @@ async function main() {
       await db
         .update(servers)
         .set({
-          stars: newStars,
-          forks: newForks,
+          starsCount: newStars,
+          forksCount: newForks,
+          lastCommitAt: new Date(stats.pushed_at),
           updatedAt: new Date(),
         })
         .where(eq(servers.id, server.id));

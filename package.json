@@ -22,6 +22,7 @@
     "validate": "dotenv -e .env.local -- tsx scripts/validate-servers.ts",
     "validate:popular": "dotenv -e .env.local -- tsx scripts/validate-servers.ts --popular",
     "enrich:glama": "dotenv -e .env.local -- tsx scripts/enrich-from-glama.ts",
+    "backfill:glama": "dotenv -e .env.local -- tsx scripts/backfill-glama.ts",
     "resync": "dotenv -e .env.local -- tsx scripts/full-resync.ts",
     "sync:daily": "dotenv -e .env.local -- tsx scripts/daily-sync.ts",
     "refresh:stats": "dotenv -e .env.local -- tsx scripts/refresh-github-stats.ts",

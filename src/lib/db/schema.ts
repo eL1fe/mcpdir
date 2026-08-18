@@ -10,6 +10,7 @@ import {
   bigint,
   numeric,
   uniqueIndex,
+  index,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -84,7 +85,10 @@ export const servers = pgTable("servers", {
   // Meta
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (t) => [
+  uniqueIndex("servers_glama_slug_unique").on(t.glamaSlug),
+  index("servers_github_repo_id_idx").on(t.githubRepoId),
+]);
 
 // Categories table
 export const categories = pgTable("categories", {
@@ -149,6 +153,24 @@ export const serverSources = pgTable(
   },
   (t) => [uniqueIndex("server_source_unique").on(t.serverId, t.source)]
 );
+
+// Durable cursors and leases for resumable import jobs.
+export const syncCheckpoints = pgTable("sync_checkpoints", {
+  source: varchar("source", { length: 100 }).primaryKey(),
+  cursor: text("cursor"),
+  status: varchar("status", { length: 50 }).notNull().default("pending"),
+  leaseOwner: varchar("lease_owner", { length: 100 }),
+  leaseUntil: timestamp("lease_until"),
+  processedCount: integer("processed_count").notNull().default(0),
+  insertedCount: integer("inserted_count").notNull().default(0),
+  updatedCount: integer("updated_count").notNull().default(0),
+  skippedCount: integer("skipped_count").notNull().default(0),
+  completedAt: timestamp("completed_at"),
+  lastRunAt: timestamp("last_run_at"),
+  lastError: text("last_error"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
 
 // Relations
 export const serversRelations = relations(servers, ({ many, one }) => ({
