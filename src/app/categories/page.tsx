@@ -81,6 +81,7 @@ export default async function CategoriesPage() {
               <Link
                 key={category.id}
                 href={`/categories/${category.slug}`}
+                prefetch={false}
                 className="group"
                 style={{ animationDelay: `${index * 50}ms` }}
               >

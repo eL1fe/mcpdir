@@ -153,7 +153,7 @@ export default async function ServersPage({ searchParams }: Props) {
                   asChild={page > 1}
                 >
                   {page > 1 ? (
-                    <Link href={buildPageUrl(page - 1)}>
+                    <Link href={buildPageUrl(page - 1)} prefetch={false}>
                       <ChevronLeft className="h-4 w-4 mr-1" />
                       Previous
                     </Link>
@@ -182,6 +182,7 @@ export default async function ServersPage({ searchParams }: Props) {
                       <Link
                         key={pageNum}
                         href={buildPageUrl(pageNum)}
+                        prefetch={false}
                         aria-current={pageNum === page ? "page" : undefined}
                         className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-medium transition-colors ${
                           pageNum === page
@@ -203,7 +204,7 @@ export default async function ServersPage({ searchParams }: Props) {
                   asChild={page < totalPages}
                 >
                   {page < totalPages ? (
-                    <Link href={buildPageUrl(page + 1)}>
+                    <Link href={buildPageUrl(page + 1)} prefetch={false}>
                       Next
                       <ChevronRight className="h-4 w-4 ml-1" />
                     </Link>

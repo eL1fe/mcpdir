@@ -229,7 +229,7 @@ export default async function ServerDetailPage({ params }: Props) {
                 {server.categoryNames?.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {server.categoryNames.map((cat, i) => (
-                      <Link key={cat} href={`/categories/${server.categories?.[i]}`}>
+                      <Link key={cat} href={`/categories/${server.categories?.[i]}`} prefetch={false}>
                         <Badge variant="outline" className="hover:bg-white/5 transition-colors">
                           {cat}
                         </Badge>

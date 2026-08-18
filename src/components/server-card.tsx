@@ -19,7 +19,7 @@ export function ServerCard({ server, featured = false }: ServerCardProps) {
   const isFailed = server.validationStatus === "failed";
 
   return (
-    <Link href={`/servers/${server.slug}`} className="block group">
+    <Link href={`/servers/${server.slug}`} prefetch={false} className="block group">
       <GlassCard
         glow={featured ? "cyan" : "none"}
         className={`h-full flex flex-col ${featured ? "min-h-[280px]" : ""}`}

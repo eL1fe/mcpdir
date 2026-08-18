@@ -53,6 +53,7 @@ export function Header() {
             <Link
               key={item.href}
               href={item.href}
+              prefetch={false}
               className={cn(
                 "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                 pathname === item.href || pathname.startsWith(item.href + "/")
@@ -108,6 +109,7 @@ export function Header() {
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={false}
                 onClick={() => setMobileMenuOpen(false)}
                 className={cn(
                   "px-4 py-3 rounded-lg text-sm font-medium transition-colors",

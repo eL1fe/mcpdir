@@ -118,7 +118,7 @@ export default async function HomePage() {
             {/* CTAs */}
             <div className="flex flex-wrap justify-center gap-4 animate-fade-in [animation-delay:400ms]">
               <Button asChild size="lg" className="h-12 px-8 text-base rounded-xl bg-gradient-to-r from-cyan to-purple hover:opacity-90 transition-opacity">
-                <Link href="/servers">
+                <Link href="/servers" prefetch={false}>
                   Browse All Servers
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
@@ -186,7 +186,7 @@ export default async function HomePage() {
               <p className="text-muted-foreground">Most popular MCP servers this week</p>
             </div>
             <Button asChild variant="ghost" className="gap-2 group">
-              <Link href="/servers">
+              <Link href="/servers" prefetch={false}>
                 View all
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
@@ -199,6 +199,7 @@ export default async function HomePage() {
               <Link
                 key={server.id}
                 href={`/servers/${server.slug}`}
+                prefetch={false}
                 className={i === 0 ? "lg:col-span-2 lg:row-span-2" : ""}
               >
                 <GlassCard
@@ -251,7 +252,7 @@ export default async function HomePage() {
             ))}
 
             {servers.slice(2, 6).map((server) => (
-              <Link key={server.id} href={`/servers/${server.slug}`}>
+              <Link key={server.id} href={`/servers/${server.slug}`} prefetch={false}>
                 <GlassCard glow="none" className="h-full">
                   <GlassCardHeader>
                     <div className="flex items-start justify-between gap-4">
@@ -338,7 +339,7 @@ export default async function HomePage() {
               <p className="text-muted-foreground">Find servers for your specific use case</p>
             </div>
             <Button asChild variant="ghost" className="gap-2 group">
-              <Link href="/categories">
+              <Link href="/categories" prefetch={false}>
                 All categories
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
@@ -351,7 +352,7 @@ export default async function HomePage() {
               const gradientClass = CATEGORY_COLORS[category.slug] ?? "from-cyan/20 to-purple/20";
 
               return (
-                <Link key={category.id} href={`/categories/${category.slug}`}>
+                <Link key={category.id} href={`/categories/${category.slug}`} prefetch={false}>
                   <GlassCard hover className="h-full group relative overflow-hidden">
                     {/* Gradient background */}
                     <div className={`absolute inset-0 bg-gradient-to-br ${gradientClass} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
