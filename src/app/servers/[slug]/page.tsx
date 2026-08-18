@@ -29,7 +29,7 @@ import { ToolsList } from "@/components/tools-list";
 import { MarkdownContent } from "@/components/markdown-content";
 import { SourceBadges } from "@/components/source-badges";
 import { HelpValidateForm } from "@/components/help-validate-form";
-import { ServerReviews } from "@/components/reviews";
+import { ServerReviews } from "@/components/reviews/server-reviews";
 import { ReportDialog } from "@/components/reports";
 import { ClaimButton } from "@/components/claims";
 import { SITE_URL, generateServerSchema, generateBreadcrumbSchema } from "@/lib/seo";

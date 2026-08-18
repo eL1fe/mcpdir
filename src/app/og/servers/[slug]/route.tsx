@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 import { getServerOgBySlug } from "@/lib/db/queries";
 import { CACHE_CONTROL } from "@/lib/cache";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 export const revalidate = 604800;
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
@@ -79,6 +79,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
         <div
           style={{
+            display: "flex",
             fontSize: 28,
             color: "#a1a1aa",
             lineHeight: 1.4,

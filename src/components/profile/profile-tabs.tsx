@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Star, Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GlassCard, GlassCardContent } from "@/components/ui/glass-card";
-import { RatingDisplay } from "@/components/reviews";
+import { RatingDisplay } from "@/components/reviews/rating-display";
 import { formatDistanceToNow } from "date-fns";
 
 interface Review {

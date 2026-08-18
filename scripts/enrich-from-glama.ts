@@ -14,7 +14,7 @@
  *   pnpm enrich:glama --dry-run          # Just count, don't save
  */
 
-import { db } from "../src/lib/db";
+import { db } from "../src/lib/db/client";
 import { servers, serverSources } from "../src/lib/db/schema";
 import { eq, sql } from "drizzle-orm";
 

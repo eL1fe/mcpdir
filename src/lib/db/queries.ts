@@ -381,10 +381,10 @@ export async function searchServers(options: SearchServersOptions = {}) {
 
   const countQuery = sql.join(countChunks, sql``);
   const countResult = await db.execute(countQuery);
-  const total = (countResult.rows[0] as { total: number })?.total ?? 0;
+  const total = (countResult[0] as { total: number })?.total ?? 0;
 
   return {
-    servers: results.rows.map((row: Record<string, unknown>) => ({
+    servers: results.map((row: Record<string, unknown>) => ({
       id: row.id as string,
       slug: row.slug as string,
       name: row.name as string,
@@ -458,7 +458,7 @@ export async function searchServersPreview(query: string, limit = 3): Promise<Se
     LIMIT ${limit}
   `);
 
-  return results.rows.map((row: Record<string, unknown>) => ({
+  return results.map((row: Record<string, unknown>) => ({
     slug: row.slug as string,
     name: row.name as string,
     description: row.description as string | null,
@@ -502,7 +502,10 @@ export async function getPopularSearches(limit = 10) {
     ORDER BY count DESC
     LIMIT ${limit}
   `;
-  return results as { query: string; count: number }[];
+  return results.map((row) => ({
+    query: row.query as string,
+    count: Number(row.count),
+  }));
 }
 
 // ============================================================================

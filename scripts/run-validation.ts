@@ -1,184 +1,83 @@
 #!/usr/bin/env tsx
 /**
- * Validation worker script for GitHub Actions
- * Triggered by repository_dispatch with validation_id
+ * Validation worker for GitHub Actions.
+ * Untrusted MCP packages run on the ephemeral runner; task data and results
+ * cross the production app's authenticated HTTPS API instead of PostgreSQL.
  */
 import { config } from "dotenv";
+import { validateInDocker } from "./lib/docker-validator";
+import type { ValidationResult } from "./lib/mcp-validator";
+
 config({ path: ".env.local" });
 
-import { db } from "../src/lib/db";
-import { servers, manualValidations, validationAuditLog } from "../src/lib/db/schema";
-import { eq } from "drizzle-orm";
-import { decryptCredentials } from "../src/lib/encryption";
-import { validateInDocker } from "./lib/docker-validator";
-
-async function main() {
-  const validationId = process.env.VALIDATION_ID;
-
-  if (!validationId) {
-    console.error("❌ VALIDATION_ID not set");
-    process.exit(1);
-  }
-
-  console.log(`🔍 Processing validation: ${validationId}`);
-
-  // Fetch validation record
-  const validation = await db.query.manualValidations.findFirst({
-    where: eq(manualValidations.id, validationId),
-  });
-
-  if (!validation) {
-    console.error("❌ Validation not found");
-    process.exit(1);
-  }
-
-  if (validation.status !== "validating") {
-    console.error(`❌ Validation status is ${validation.status}, expected 'validating'`);
-    process.exit(1);
-  }
-
-  // Get server info
-  const server = await db.query.servers.findFirst({
-    where: eq(servers.id, validation.serverId),
-  });
-
-  if (!server) {
-    console.error("❌ Server not found");
-    await db
-      .update(manualValidations)
-      .set({
-        status: "failed",
-        validationError: "Server not found",
-        encryptedCredentials: null, // Clear credentials
-      })
-      .where(eq(manualValidations.id, validationId));
-    process.exit(1);
-  }
-
-  // Determine install command
-  const installCommand = validation.installCommand || server.installCommand;
-  if (!installCommand) {
-    console.error("❌ No install command");
-    await db
-      .update(manualValidations)
-      .set({
-        status: "failed",
-        validationError: "No install command available",
-        encryptedCredentials: null,
-      })
-      .where(eq(manualValidations.id, validationId));
-    process.exit(1);
-  }
-
-  // Decrypt credentials if present
-  let credentials: Record<string, string> = {};
-  if (validation.encryptedCredentials) {
-    try {
-      credentials = decryptCredentials(validation.encryptedCredentials);
-      console.log(`🔑 Decrypted ${Object.keys(credentials).length} credentials`);
-    } catch (err) {
-      console.error("❌ Failed to decrypt credentials:", err);
-      await db
-        .update(manualValidations)
-        .set({
-          status: "failed",
-          validationError: "Failed to decrypt credentials",
-          encryptedCredentials: null,
-        })
-        .where(eq(manualValidations.id, validationId));
-      process.exit(1);
-    }
-  }
-
-  console.log(`🚀 Running validation for: ${server.name}`);
-  console.log(`📦 Command: ${installCommand}`);
-
-  // Run Docker validation
-  const result = await validateInDocker({
-    installCommand,
-    envVars: credentials,
-  });
-
-  // Clear credentials immediately after use
-  await db
-    .update(manualValidations)
-    .set({ encryptedCredentials: null })
-    .where(eq(manualValidations.id, validationId));
-
-  if (result.success) {
-    console.log(`✅ Validation successful!`);
-    console.log(`   Tools: ${result.tools?.length ?? 0}`);
-    console.log(`   Resources: ${result.resources?.length ?? 0}`);
-    console.log(`   Prompts: ${result.prompts?.length ?? 0}`);
-    console.log(`   Duration: ${result.durationMs}ms`);
-
-    // Update validation record
-    await db
-      .update(manualValidations)
-      .set({
-        status: "completed",
-        validationResult: result,
-      })
-      .where(eq(manualValidations.id, validationId));
-
-    // Update server
-    await db
-      .update(servers)
-      .set({
-        validationStatus: "validated",
-        validatedAt: new Date(),
-        validationResult: result,
-        validationError: null,
-        validationDurationMs: result.durationMs,
-        tools: result.tools ?? server.tools,
-        resources: result.resources ?? server.resources,
-        prompts: result.prompts ?? server.prompts,
-      })
-      .where(eq(servers.id, validation.serverId));
-
-    // Audit log
-    await db.insert(validationAuditLog).values({
-      serverId: validation.serverId,
-      userId: validation.userId,
-      action: "complete",
-      metadata: {
-        validationId,
-        durationMs: result.durationMs,
-        toolsCount: result.tools?.length ?? 0,
-        source: "github-actions",
-      },
-    });
-  } else {
-    console.log(`❌ Validation failed: ${result.error}`);
-
-    // Update validation record
-    await db
-      .update(manualValidations)
-      .set({
-        status: "failed",
-        validationError: result.error,
-      })
-      .where(eq(manualValidations.id, validationId));
-
-    // Audit log
-    await db.insert(validationAuditLog).values({
-      serverId: validation.serverId,
-      userId: validation.userId,
-      action: "fail",
-      metadata: {
-        validationId,
-        error: result.error,
-        durationMs: result.durationMs,
-        source: "github-actions",
-      },
-    });
-
-    // Exit with error so GitHub Action shows as failed
-    process.exit(1);
-  }
+interface ValidationTask {
+  validationId: string;
+  serverId: string;
+  serverName: string;
+  installCommand: string;
+  credentials: Record<string, string>;
 }
 
-main().catch((err) => {
-  console.error("❌ Unexpected error:", err);
+function requiredEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) throw new Error(`${name} is required`);
+  return value;
+}
+
+async function workerRequest(path: string, init?: RequestInit): Promise<Response> {
+  const appUrl = requiredEnv("APP_URL").replace(/\/$/, "");
+  const workerSecret = requiredEnv("VALIDATION_WORKER_SECRET");
+
+  return fetch(`${appUrl}${path}`, {
+    ...init,
+    headers: {
+      Authorization: `Bearer ${workerSecret}`,
+      "Content-Type": "application/json",
+      ...init?.headers,
+    },
+  });
+}
+
+async function main() {
+  const validationId = requiredEnv("VALIDATION_ID");
+  const endpoint = `/api/internal/validation/${encodeURIComponent(validationId)}`;
+
+  console.log(`🔍 Fetching validation task ${validationId}`);
+  const taskResponse = await workerRequest(endpoint);
+  if (!taskResponse.ok) {
+    throw new Error(`Failed to fetch task: ${taskResponse.status} ${await taskResponse.text()}`);
+  }
+
+  const task = (await taskResponse.json()) as ValidationTask;
+  console.log(`🚀 Validating ${task.serverName}`);
+
+  let result: ValidationResult;
+  try {
+    result = await validateInDocker({
+      installCommand: task.installCommand,
+      envVars: task.credentials,
+    });
+  } catch (error) {
+    result = {
+      success: false,
+      error: error instanceof Error ? error.message : "Unexpected validation error",
+      durationMs: 0,
+    };
+  }
+
+  const resultResponse = await workerRequest(endpoint, {
+    method: "POST",
+    body: JSON.stringify({ result }),
+  });
+  if (!resultResponse.ok) {
+    throw new Error(`Failed to report result: ${resultResponse.status} ${await resultResponse.text()}`);
+  }
+
+  console.log(result.success ? "✅ Validation completed" : `❌ Validation failed: ${result.error}`);
+  if (!result.success) process.exitCode = 1;
+}
+
+main().catch((error) => {
+  console.error("❌ Validation worker failed:", error);
   process.exit(1);
 });

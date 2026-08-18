@@ -1,7 +1,6 @@
-import { neon } from "@neondatabase/serverless";
-import { drizzle, NeonHttpDatabase } from "drizzle-orm/neon-http";
 import { eq, inArray, and, sql } from "drizzle-orm";
 import pLimit from "p-limit";
+import { db } from "../../src/lib/db/client";
 import {
   servers,
   serverSources,
@@ -19,17 +18,6 @@ import { getSource, getAllSources } from "./sources";
 import { deduplicateServers, groupByCanonicalUrl, MergedServer } from "./deduplication";
 import { validateMcpServerSafe } from "./docker-validator";
 import { detectRequiresConfig } from "./mcp-validator";
-
-// Lazy initialization of database connection
-let db: NeonHttpDatabase | null = null;
-
-function getDb(): NeonHttpDatabase {
-  if (!db) {
-    const sqlClient = neon(process.env.DATABASE_URL!);
-    db = drizzle(sqlClient);
-  }
-  return db;
-}
 
 // Read token at runtime (after dotenv is loaded)
 function getGitHubToken(): string | undefined {
@@ -341,8 +329,8 @@ export async function syncServers(options: SyncOptions = {}): Promise<SyncResult
   console.log(`Options: skipAI=${skipAI}, forceRefresh=${forceRefresh}, retryAIFailed=${retryAIFailed}, concurrency=${concurrency}${serverLimit ? `, limit=${serverLimit}` : ""}\n`);
 
   // Load categories and tags
-  const allCategories = await getDb().select().from(categories);
-  const allTags = await getDb().select().from(tags);
+  const allCategories = await db.select().from(categories);
+  const allTags = await db.select().from(tags);
   const categoryMap = new Map(allCategories.map((c) => [c.slug, c.id]));
   const tagMap = new Map(allTags.map((t) => [t.slug, t.id]));
 
@@ -361,7 +349,7 @@ export async function syncServers(options: SyncOptions = {}): Promise<SyncResult
 
   // Get existing servers for comparison
   // Note: We use hasReadme boolean instead of full content to avoid exceeding Neon's 64MB response limit
-  const existingServers = await getDb()
+  const existingServers = await db
     .select({
       id: servers.id,
       slug: servers.slug,
@@ -472,7 +460,7 @@ export async function syncServers(options: SyncOptions = {}): Promise<SyncResult
               // Canonical URL already in DB - mark old entry as redirect
               const oldEntry = existingByUrl.get(canonicalUrl);
               if (oldEntry) {
-                await getDb().update(servers).set({ status: "redirect" }).where(eq(servers.id, oldEntry.id));
+                await db.update(servers).set({ status: "redirect" }).where(eq(servers.id, oldEntry.id));
                 console.log(`    Marked old entry as redirect`);
               }
               result.skipped++;
@@ -567,7 +555,7 @@ export async function syncServers(options: SyncOptions = {}): Promise<SyncResult
       const envConfigSchema = glamaData?.environmentVariablesJsonSchema || null;
 
       // Upsert server
-      const [inserted] = await getDb()
+      const [inserted] = await db
         .insert(servers)
         .values({
           slug,
@@ -630,7 +618,7 @@ export async function syncServers(options: SyncOptions = {}): Promise<SyncResult
       // Track sources in server_sources table
       for (const source of mergedServer.sources) {
         const sourceData = mergedServer.sourceData[source];
-        await getDb()
+        await db
           .insert(serverSources)
           .values({
             serverId: inserted.id,
@@ -648,7 +636,7 @@ export async function syncServers(options: SyncOptions = {}): Promise<SyncResult
       }
 
       // Atomically replace categories and tags
-      await getDb().transaction(async (tx) => {
+      await db.transaction(async (tx) => {
         await tx.delete(serverCategories).where(eq(serverCategories.serverId, inserted.id));
         await tx.delete(serverTags).where(eq(serverTags.serverId, inserted.id));
 
@@ -682,7 +670,7 @@ export async function syncServers(options: SyncOptions = {}): Promise<SyncResult
         console.log(
           `  Version changed: ${existingServer.latestVersion} → ${mergedServer.version}, queuing re-validation`
         );
-        await getDb()
+        await db
           .insert(manualValidations)
           .values({
             serverId: inserted.id,
@@ -698,7 +686,7 @@ export async function syncServers(options: SyncOptions = {}): Promise<SyncResult
       if (isNew && validateNew && inserted.installCommand) {
         // Check if server requires config (skip those)
         if (readmeContent && detectRequiresConfig(readmeContent)) {
-          await getDb()
+          await db
             .update(servers)
             .set({
               validationStatus: "needs_config",
@@ -711,7 +699,7 @@ export async function syncServers(options: SyncOptions = {}): Promise<SyncResult
           const validationResult = await validateMcpServerSafe(inserted.installCommand);
 
           if (validationResult.success) {
-            await getDb()
+            await db
               .update(servers)
               .set({
                 validationStatus: "validated",
@@ -733,7 +721,7 @@ export async function syncServers(options: SyncOptions = {}): Promise<SyncResult
             result.validated++;
             console.log(`  ✅ ${serverName} validated (${validationResult.tools?.length || 0} tools)`);
           } else {
-            await getDb()
+            await db
               .update(servers)
               .set({
                 validationStatus: "failed",

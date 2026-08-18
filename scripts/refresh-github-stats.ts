@@ -13,9 +13,8 @@
  */
 
 import { config } from "dotenv";
-import { neon } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-http";
 import { eq, isNotNull, and, sql } from "drizzle-orm";
+import { db } from "../src/lib/db/client";
 import { servers } from "../src/lib/db/schema";
 
 config({ path: ".env.local" });
@@ -80,9 +79,6 @@ async function main() {
   if (!process.env.GITHUB_TOKEN) {
     console.warn("WARNING: GITHUB_TOKEN not set - rate limits will be low (60/hour)\n");
   }
-
-  const sqlClient = neon(process.env.DATABASE_URL);
-  const db = drizzle(sqlClient);
 
   // Get servers with GitHub info
   const query = db

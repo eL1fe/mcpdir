@@ -3,7 +3,7 @@ import { Star, Wrench, CheckCircle, ShieldCheck, ArrowUpRight, Settings, XCircle
 import { GlassCard, GlassCardContent, GlassCardHeader, GlassCardTitle } from "@/components/ui/glass-card";
 import { Badge } from "@/components/ui/badge";
 import { SourceBadges } from "./source-badges";
-import { RatingDisplay } from "@/components/reviews";
+import { RatingDisplay } from "@/components/reviews/rating-display";
 import type { ServerWithRelations } from "@/types";
 
 interface ServerCardProps {

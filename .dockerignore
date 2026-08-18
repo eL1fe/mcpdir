@@ -1,0 +1,9 @@
+.git
+.github
+.next
+node_modules
+.env
+.env.*
+package-lock.json
+npm-debug.log*
+pnpm-debug.log*

@@ -28,10 +28,9 @@ jobs:
 
       - name: Run validation
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          CREDENTIALS_ENCRYPTION_KEY: ${{ secrets.CREDENTIALS_ENCRYPTION_KEY }}
           VALIDATION_ID: ${{ github.event.client_payload.validation_id }}
-          APP_URL: ${{ secrets.APP_URL }}
+          APP_URL: https://mcpdir.dev
+          VALIDATION_WORKER_SECRET: ${{ secrets.VALIDATION_WORKER_SECRET }}
         run: pnpm tsx scripts/run-validation.ts
 
       - name: Report success

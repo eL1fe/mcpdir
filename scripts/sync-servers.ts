@@ -38,7 +38,7 @@ function parseArgs(): {
   }
 
   const hasAI = !!process.env.ANTHROPIC_API_KEY || !!process.env.OPENROUTER_API_KEY;
-  const skipAI = process.env.SKIP_AI === "true" || !hasAI;
+  const skipAI = process.env.SKIP_AI === "true" || args.includes("--skip-ai") || !hasAI;
   const forceRefresh = process.env.FORCE_REFRESH === "true" || args.includes("--force");
   const retryAIFailed = process.env.RETRY_AI_FAILED === "true" || args.includes("--retry-ai");
   const validateNew = args.includes("--validate");
