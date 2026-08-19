@@ -17,7 +17,7 @@ import { GlassCard, GlassCardContent } from "@/components/ui/glass-card";
 import { GradientText } from "@/components/ui/gradient-text";
 import { SITE_URL } from "@/lib/seo";
 
-export const revalidate = 86400;
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "MCP Server Categories — Browse by Type",
