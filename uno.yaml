@@ -7,6 +7,7 @@ services:
     env_from:
       - project:ADMIN_GITHUB_USERNAMES
       - project:AUTH_SECRET
+      - project:AUTH_TRUST_HOST
       - project:CREDENTIALS_ENCRYPTION_KEY
       - project:GITHUB_CLIENT_ID
       - project:GITHUB_CLIENT_SECRET
