@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getCategories } from "@/lib/db/queries";
 import { CACHE_CONTROL } from "@/lib/cache";
 
-export const revalidate = 86400;
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const categories = await getCategories();

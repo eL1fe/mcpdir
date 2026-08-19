@@ -1,0 +1,19 @@
+version: 1
+
+services:
+  - name: web
+    dockerfile: ./Dockerfile
+    ports: [3000]
+    env_from:
+      - project:ADMIN_GITHUB_USERNAMES
+      - project:AUTH_SECRET
+      - project:CREDENTIALS_ENCRYPTION_KEY
+      - project:GITHUB_CLIENT_ID
+      - project:GITHUB_CLIENT_SECRET
+      - project:GITHUB_REPOSITORY
+      - project:GITHUB_TOKEN
+      - project:NEXTAUTH_SECRET
+      - project:OPENROUTER_API_KEY
+      - project:DATABASE_URL
+      - project:VALIDATION_WORKER_SECRET
+    deploy_mode: pet

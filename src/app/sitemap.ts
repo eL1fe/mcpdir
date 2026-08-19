@@ -4,7 +4,7 @@ import { servers, categories } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { SITE_URL } from "@/lib/seo";
 
-export const revalidate = 86400;
+export const dynamic = "force-dynamic";
 
 const SITEMAP_SERVER_LIMIT = Math.max(
   100,
