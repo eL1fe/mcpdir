@@ -71,6 +71,7 @@ export default async function HomePage() {
     getCategories(),
     getStats(),
   ]);
+  const serverCountLabel = stats.servers.toLocaleString("en-US");
 
   return (
     <div className="flex flex-col">
@@ -101,7 +102,7 @@ export default async function HomePage() {
             <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-2xl mx-auto animate-fade-in [animation-delay:200ms]">
               Open-source, community-driven directory of MCP servers.
               <span className="block mt-2 text-lg">
-                8,000+ integrations. Zero vendor lock-in.
+                {serverCountLabel} integrations. Zero vendor lock-in.
               </span>
             </p>
 
@@ -109,7 +110,7 @@ export default async function HomePage() {
             <div className="max-w-2xl mx-auto mb-10 animate-fade-in [animation-delay:300ms] relative z-50">
               <div className="glass rounded-2xl p-1.5">
                 <SearchCommand
-                  placeholder="Search 8000+ MCP servers..."
+                  placeholder={`Search ${serverCountLabel} MCP servers...`}
                   className="[&_input]:bg-background/50 [&_input]:border-0 [&_input]:h-14 [&_input]:text-lg [&_input]:rounded-xl"
                 />
               </div>
