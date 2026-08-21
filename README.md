@@ -4,7 +4,7 @@
 
 ### The Largest Open MCP Server Directory
 
-**8,000+ community-driven MCP servers. Open-source, fully searchable, zero vendor lock-in.**
+**Community-driven MCP servers. Open-source, fully searchable, zero vendor lock-in.**
 
 <br />
 
@@ -39,7 +39,7 @@ Unlike closed registries, MCP Hub aggregates servers from **5+ sources** and mak
 
 <div align="center">
 
-> **8,000+ servers** · **15+ categories** · **5 data sources** · **100% open-source**
+> **Growing server index** · **Multiple categories** · **5 data sources** · **100% open-source**
 
 </div>
 
@@ -263,7 +263,7 @@ We welcome contributions! Here's how to get started:
 - [x] Server submission form with validation
 - [x] Admin dashboard with validation queue
 - [x] Auto-revalidation on version updates
-- [x] 8,000+ servers indexed
+- [x] Multi-source server index
 
 ### In Progress
 - [ ] PyPI source integration

@@ -15,19 +15,22 @@ import {
 import { getCategories } from "@/lib/db/queries";
 import { GlassCard, GlassCardContent } from "@/components/ui/glass-card";
 import { GradientText } from "@/components/ui/gradient-text";
-import { SITE_URL } from "@/lib/seo";
+import {
+  SITE_URL,
+  createPageMetadata,
+  generateCollectionPageSchema,
+  serializeJsonLd,
+} from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: "MCP Server Categories — Browse by Type",
   description:
     "Explore MCP servers organized by category. Find servers for databases, file systems, APIs, AI/ML, developer tools, and more.",
   keywords: ["MCP categories", "AI server types", "MCP server directory", "AI integrations by category"],
-  alternates: {
-    canonical: `${SITE_URL}/categories`,
-  },
-};
+  path: "/categories",
+});
 
 const CATEGORY_ICONS: Record<string, React.ElementType> = {
   databases: Database,
@@ -55,9 +58,19 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string; glow: string }
 
 export default async function CategoriesPage() {
   const categories = await getCategories();
+  const collectionSchema = generateCollectionPageSchema({
+    name: "MCP Server Categories",
+    description: "Browse MCP servers by category and functionality.",
+    url: `${SITE_URL}/categories`,
+    itemCount: categories.length,
+  });
 
   return (
     <div className="min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(collectionSchema) }}
+      />
       {/* Header with gradient */}
       <div className="relative overflow-hidden border-b border-[var(--glass-border)]">
         <div className="absolute inset-0 bg-gradient-to-b from-purple/5 via-cyan/3 to-transparent" />

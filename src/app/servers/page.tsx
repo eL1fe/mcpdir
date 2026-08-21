@@ -10,7 +10,12 @@ import { NoResultsState } from "@/components/no-results-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { GradientText } from "@/components/ui/gradient-text";
-import { SITE_URL } from "@/lib/seo";
+import {
+  SITE_URL,
+  createPageMetadata,
+  generateCollectionPageSchema,
+  serializeJsonLd,
+} from "@/lib/seo";
 
 export const revalidate = 3600;
 
@@ -29,6 +34,8 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const rawQuery = params.q?.trim();
   const query = rawQuery && rawQuery.length >= 2 ? rawQuery : undefined;
   const category = params.category;
+  const tags = params.tags;
+  const sort = params.sort;
   const page = parseInt(params.page || "1", 10);
 
   let title = "Browse All MCP Servers";
@@ -47,14 +54,19 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     title = `${title} — Page ${page}`;
   }
 
-  return {
+  const hasNonCanonicalFilters = Boolean(
+    query || category || tags || (sort && sort !== "stars")
+  );
+  const path = !hasNonCanonicalFilters && page > 1
+    ? `/servers?page=${page}`
+    : "/servers";
+
+  return createPageMetadata({
     title,
     description,
-    alternates: {
-      canonical: `${SITE_URL}/servers${page > 1 ? `?page=${page}` : ""}`,
-    },
-    robots: query ? { index: false, follow: true } : undefined,
-  };
+    path,
+    noIndex: hasNonCanonicalFilters,
+  });
 }
 
 export default async function ServersPage({ searchParams }: Props) {
@@ -82,6 +94,15 @@ export default async function ServersPage({ searchParams }: Props) {
   ]);
 
   const { servers, total, totalPages } = result;
+  const isCanonicalListing = !query && !categorySlug && !tagSlugs?.length && sort === "stars";
+  const collectionSchema = isCanonicalListing
+    ? generateCollectionPageSchema({
+        name: page > 1 ? `MCP Servers — Page ${page}` : "MCP Server Directory",
+        description: "Browse the open directory of community-built Model Context Protocol servers.",
+        url: `${SITE_URL}/servers${page > 1 ? `?page=${page}` : ""}`,
+        itemCount: total,
+      })
+    : null;
 
   const buildPageUrl = (pageNum: number) => {
     const params = new URLSearchParams();
@@ -95,6 +116,12 @@ export default async function ServersPage({ searchParams }: Props) {
 
   return (
     <div className="min-h-screen">
+      {collectionSchema ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(collectionSchema) }}
+        />
+      ) : null}
       {/* Header section with gradient background */}
       <div className="relative overflow-hidden border-b border-[var(--glass-border)]">
         <div className="absolute inset-0 bg-gradient-to-b from-cyan/5 via-transparent to-transparent" />

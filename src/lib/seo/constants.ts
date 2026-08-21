@@ -4,9 +4,8 @@ export const SITE_CONFIG = {
   name: "MCP Hub",
   tagline: "The largest open MCP server directory",
   description:
-    "The largest open-source directory of 8000+ MCP servers. Community-driven registry for Model Context Protocol — find AI integrations for databases, APIs, and dev tools.",
+    "The largest open-source directory of MCP servers. Community-driven registry for Model Context Protocol — find AI integrations for databases, APIs, and dev tools.",
   url: SITE_URL,
-  twitterHandle: "@mcphub",
   locale: "en_US",
   themeColor: "#06b6d4",
   backgroundColor: "#0a0a0f",

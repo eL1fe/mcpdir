@@ -19,7 +19,13 @@ import { getCategoryBySlug, getServersByCategory } from "@/lib/db/queries";
 import { ServerCard } from "@/components/server-card";
 import { Button } from "@/components/ui/button";
 import { GradientText } from "@/components/ui/gradient-text";
-import { SITE_URL } from "@/lib/seo";
+import {
+  SITE_URL,
+  createPageMetadata,
+  generateBreadcrumbSchema,
+  generateCollectionPageSchema,
+  serializeJsonLd,
+} from "@/lib/seo";
 
 export const revalidate = 86400;
 
@@ -31,7 +37,7 @@ interface Props {
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { slug } = await params;
   const { page: pageParam } = await searchParams;
-  const page = parseInt(pageParam || "1", 10);
+  const page = Math.max(1, parseInt(pageParam || "1", 10) || 1);
 
   const category = await getCategoryBySlug(slug);
   if (!category) {
@@ -49,13 +55,11 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     title = `${title} — Page ${page}`;
   }
 
-  return {
+  return createPageMetadata({
     title,
     description,
-    alternates: {
-      canonical: `${SITE_URL}/categories/${slug}${page > 1 ? `?page=${page}` : ""}`,
-    },
-  };
+    path: `/categories/${slug}${page > 1 ? `?page=${page}` : ""}`,
+  });
 }
 
 const PAGE_SIZE = 30;
@@ -86,6 +90,20 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   const { servers, total } = await getServersByCategory(slug, PAGE_SIZE, page);
   const totalPages = Math.ceil(total / PAGE_SIZE);
   const Icon = CATEGORY_ICONS[slug] ?? Package;
+  const canonicalUrl = `${SITE_URL}/categories/${slug}${page > 1 ? `?page=${page}` : ""}`;
+  const structuredData = [
+    generateCollectionPageSchema({
+      name: page > 1 ? `${category.name} MCP Servers — Page ${page}` : `${category.name} MCP Servers`,
+      description: category.description || `Browse MCP servers in the ${category.name} category.`,
+      url: canonicalUrl,
+      itemCount: total,
+    }),
+    generateBreadcrumbSchema([
+      { name: "Home", url: SITE_URL },
+      { name: "Categories", url: `${SITE_URL}/categories` },
+      { name: category.name, url: canonicalUrl },
+    ]),
+  ];
 
   const buildPageUrl = (pageNum: number) => {
     return `/categories/${slug}?page=${pageNum}`;
@@ -93,6 +111,10 @@ export default async function CategoryPage({ params, searchParams }: Props) {
 
   return (
     <div className="min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(structuredData) }}
+      />
       {/* Header with gradient */}
       <div className="relative overflow-hidden border-b border-[var(--glass-border)]">
         <div className="absolute inset-0 bg-gradient-to-b from-purple/5 via-cyan/3 to-transparent" />

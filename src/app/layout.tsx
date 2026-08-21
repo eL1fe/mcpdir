@@ -3,7 +3,14 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { SessionProvider } from "@/components/session-provider";
-import { SITE_CONFIG, SITE_URL, KEYWORDS, generateOrganizationSchema, generateWebSiteSchema } from "@/lib/seo";
+import {
+  SITE_CONFIG,
+  SITE_URL,
+  KEYWORDS,
+  generateOrganizationSchema,
+  generateWebSiteSchema,
+  serializeJsonLd,
+} from "@/lib/seo";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -61,8 +68,6 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${SITE_CONFIG.name} — ${SITE_CONFIG.tagline}`,
     description: SITE_CONFIG.description,
-    site: SITE_CONFIG.twitterHandle,
-    creator: SITE_CONFIG.twitterHandle,
     images: ["/og/default"],
   },
   alternates: {
@@ -110,7 +115,7 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify([organizationSchema, webSiteSchema]),
+            __html: serializeJsonLd([organizationSchema, webSiteSchema]),
           }}
         />
         <SessionProvider>

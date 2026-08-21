@@ -30,7 +30,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: `${SITE_CONFIG.name} — The Largest Open MCP Server Directory`,
   description:
-    "The largest open-source directory of 8000+ MCP servers. Community-driven, fully searchable. Find AI integrations for databases, APIs, file systems, and developer tools.",
+    "The largest open-source directory of MCP servers. Community-driven, fully searchable. Find AI integrations for databases, APIs, file systems, and developer tools.",
   keywords: [
     "MCP servers",
     "Model Context Protocol",
@@ -311,7 +311,7 @@ export default async function HomePage() {
                 </div>
                 <h3 className="text-lg font-semibold mb-3">Open & Community-Driven</h3>
                 <p className="text-sm text-muted-foreground">
-                  8000+ servers from the community. No walled gardens, no gatekeeping.
+                  {serverCountLabel} servers from the community. No walled gardens, no gatekeeping.
                 </p>
               </GlassCardContent>
             </GlassCard>

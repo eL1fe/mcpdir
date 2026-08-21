@@ -1,8 +1,17 @@
+import type { Metadata } from "next";
 import { signIn } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { GlassCard, GlassCardContent, GlassCardHeader, GlassCardTitle } from "@/components/ui/glass-card";
 import { GradientText } from "@/components/ui/gradient-text";
 import { Github } from "lucide-react";
+import { createPageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "Sign In",
+  description: "Sign in to MCP Hub with GitHub.",
+  path: "/auth/signin",
+  noIndex: true,
+});
 
 export default function SignInPage() {
   return (

@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { users, reviews, submissions, servers } from "@/lib/db/schema";
 import { eq, count, desc, and } from "drizzle-orm";
 import { ProfileHeader, ProfileTabs } from "@/components/profile";
-import { SITE_URL } from "@/lib/seo";
+import { createPageMetadata } from "@/lib/seo";
 
 export const revalidate = 3600;
 export const dynamic = "force-static";
@@ -83,13 +83,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const displayName = user.githubUsername;
 
-  return {
-    title: `${displayName} — MCP Hub`,
+  return createPageMetadata({
+    title: `${displayName}'s MCP Hub Profile`,
     description: `${displayName}'s profile on MCP Hub. ${user.stats.reviews} reviews, ${user.stats.submissions} submitted servers.`,
-    alternates: {
-      canonical: `${SITE_URL}/u/${user.githubUsername}`,
-    },
-  };
+    path: `/u/${user.githubUsername}`,
+  });
 }
 
 export default async function UserProfilePage({ params }: Props) {

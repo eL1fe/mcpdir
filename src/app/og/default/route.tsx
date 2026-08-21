@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { CACHE_CONTROL } from "@/lib/cache";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 export const revalidate = 604800;
 
 export async function GET() {
@@ -89,7 +89,7 @@ export async function GET() {
             color: "#71717a",
           }}
         >
-          <span>8,000+ Servers</span>
+          <span>Open MCP Servers</span>
           <span style={{ color: "#06b6d4" }}>•</span>
           <span>Community-Driven</span>
           <span style={{ color: "#a855f7" }}>•</span>

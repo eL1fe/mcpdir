@@ -48,10 +48,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="mt-6 pt-6 border-t border-[var(--glass-border)] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <p>Open-source, built by the community</p>
-          <p className="flex items-center gap-1">
-            <span className="text-cyan font-medium">8,000+</span>
-            open MCP servers indexed
-          </p>
+          <p>Open MCP servers indexed from across the community</p>
         </div>
       </div>
     </footer>

@@ -14,7 +14,6 @@ import {
   Settings,
   ShieldCheck,
   XCircle,
-  Copy,
   Github,
   Clock,
 } from "lucide-react";
@@ -32,7 +31,13 @@ import { HelpValidateForm } from "@/components/help-validate-form";
 import { ServerReviews } from "@/components/reviews/server-reviews";
 import { ReportDialog } from "@/components/reports";
 import { ClaimButton } from "@/components/claims";
-import { SITE_URL, generateServerSchema, generateBreadcrumbSchema } from "@/lib/seo";
+import {
+  SITE_URL,
+  createPageMetadata,
+  generateServerSchema,
+  generateBreadcrumbSchema,
+  serializeJsonLd,
+} from "@/lib/seo";
 
 export const revalidate = 86400;
 export const dynamic = "force-static";
@@ -68,34 +73,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ...(server.categoryNames || []),
   ];
 
-  return {
+  return createPageMetadata({
     title: `${server.name} — MCP Server`,
     description,
     keywords,
-    alternates: {
-      canonical: `${SITE_URL}/servers/${slug}`,
-    },
-    openGraph: {
-      type: "article",
-      title: `${server.name} — MCP Server`,
-      description,
-      url: `${SITE_URL}/servers/${slug}`,
-      images: [
-        {
-          url: `${SITE_URL}/og/servers/${slug}`,
-          width: 1200,
-          height: 630,
-          alt: `${server.name} — MCP Server`,
-        },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: `${server.name} — MCP Server`,
-      description,
-      images: [`${SITE_URL}/og/servers/${slug}`],
-    },
-  };
+    path: `/servers/${slug}`,
+    imagePath: `/og/servers/${slug}`,
+    type: "article",
+  });
 }
 
 export default async function ServerDetailPage({ params }: Props) {
@@ -133,6 +118,8 @@ export default async function ServerDetailPage({ params }: Props) {
     sourceUrl: server.sourceUrl,
     homepageUrl: server.homepageUrl,
     starsCount: server.starsCount,
+    averageRating: server.averageRating,
+    reviewsCount: server.reviewsCount,
     latestVersion: server.latestVersion,
     tools: tools,
     updatedAt: server.updatedAt,
@@ -149,7 +136,7 @@ export default async function ServerDetailPage({ params }: Props) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify([serverSchema, breadcrumbSchema]),
+          __html: serializeJsonLd([serverSchema, breadcrumbSchema]),
         }}
       />
       <div className="min-h-screen">

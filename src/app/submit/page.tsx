@@ -7,16 +7,15 @@ import { getCategories } from "@/lib/db/queries";
 import { SubmitForm } from "@/components/submissions";
 import { GradientText } from "@/components/ui/gradient-text";
 import { Button } from "@/components/ui/button";
-import { SITE_URL } from "@/lib/seo";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Submit an MCP Server — MCP Hub",
+export const metadata: Metadata = createPageMetadata({
+  title: "Submit an MCP Server",
   description:
     "Submit your MCP server to the directory. Share your integration with the community and help others discover it.",
-  alternates: {
-    canonical: `${SITE_URL}/submit`,
-  },
-};
+  path: "/submit",
+  noIndex: true,
+});
 
 export default async function SubmitPage() {
   const session = await auth();

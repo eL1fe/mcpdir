@@ -19,14 +19,6 @@ export function generateWebSiteSchema() {
     name: SITE_CONFIG.name,
     url: SITE_CONFIG.url,
     description: SITE_CONFIG.description,
-    potentialAction: {
-      "@type": "SearchAction",
-      target: {
-        "@type": "EntryPoint",
-        urlTemplate: `${SITE_CONFIG.url}/servers?q={search_term_string}`,
-      },
-      "query-input": "required name=search_term_string",
-    },
   };
 }
 
@@ -37,12 +29,20 @@ interface ServerSchemaInput {
   sourceUrl: string;
   homepageUrl?: string | null;
   starsCount?: number | null;
+  averageRating?: string | number | null;
+  reviewsCount?: number | null;
   latestVersion?: string | null;
   tools?: { name: string; description?: string }[];
   updatedAt: Date | null;
 }
 
 export function generateServerSchema(server: ServerSchemaInput) {
+  const averageRating = Number(server.averageRating);
+  const hasReviews = Number.isFinite(averageRating) &&
+    averageRating >= 1 &&
+    averageRating <= 5 &&
+    (server.reviewsCount ?? 0) > 0;
+
   return {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
@@ -54,16 +54,22 @@ export function generateServerSchema(server: ServerSchemaInput) {
     ...(server.latestVersion && { softwareVersion: server.latestVersion }),
     codeRepository: server.sourceUrl,
     downloadUrl: server.homepageUrl || server.sourceUrl,
-    ...(server.starsCount &&
-      server.starsCount > 0 && {
-        aggregateRating: {
-          "@type": "AggregateRating",
-          ratingValue: Math.min(5, 3 + server.starsCount / 1000).toFixed(1),
-          bestRating: "5",
-          worstRating: "1",
-          ratingCount: server.starsCount,
-        },
-      }),
+    ...(server.starsCount && server.starsCount > 0 && {
+      interactionStatistic: {
+        "@type": "InteractionCounter",
+        interactionType: "https://schema.org/LikeAction",
+        userInteractionCount: server.starsCount,
+      },
+    }),
+    ...(hasReviews && {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: averageRating.toFixed(1),
+        bestRating: "5",
+        worstRating: "1",
+        ratingCount: server.reviewsCount,
+      },
+    }),
     offers: {
       "@type": "Offer",
       price: "0",
@@ -75,6 +81,10 @@ export function generateServerSchema(server: ServerSchemaInput) {
     }),
     ...(server.updatedAt && { dateModified: server.updatedAt.toISOString() }),
   };
+}
+
+export function serializeJsonLd(value: unknown) {
+  return JSON.stringify(value).replaceAll("<", "\\u003c");
 }
 
 export function generateBreadcrumbSchema(items: { name: string; url: string }[]) {

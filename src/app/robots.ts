@@ -24,7 +24,7 @@ export default function robots(): MetadataRoute.Robots {
       },
       {
         userAgent: "*",
-        allow: "/",
+        allow: ["/", "/og/default"],
         disallow: ["/api/", "/auth/", "/_next/", "/og/"],
         crawlDelay: 10,
       },
