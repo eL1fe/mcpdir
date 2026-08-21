@@ -249,8 +249,20 @@ async function main() {
         const glamaUrl = item.url.startsWith("http") ? item.url : `https://glama.ai${item.url}`;
         const glamaSlug = `@${item.namespace}/${item.slug}`.toLowerCase();
         const initialUrl = item.repository?.url ? normalizeGitHubUrl(item.repository.url) : null;
-        const directMatch = (initialUrl ? byUrl.get(normalizeUrl(initialUrl)) : undefined)
-          || byGlamaSlug.get(glamaSlug);
+        const urlMatch = initialUrl ? byUrl.get(normalizeUrl(initialUrl)) : undefined;
+        const slugMatch = byGlamaSlug.get(glamaSlug);
+
+        if (urlMatch && slugMatch && urlMatch.id !== slugMatch.id) {
+          return {
+            glama: item,
+            glamaUrl,
+            glamaSlug,
+            canonicalUrl: urlMatch.sourceUrl,
+            skipReason: "Glama slug and repository URL match different servers",
+          };
+        }
+
+        const directMatch = urlMatch || slugMatch;
 
         if (directMatch) {
           return {
