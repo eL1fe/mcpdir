@@ -13,14 +13,16 @@
 <br />
 
 [![GitHub Stars](https://img.shields.io/github/stars/eL1fe/mcpdir?style=flat-square&logo=github&color=06b6d4)](https://github.com/eL1fe/mcpdir/stargazers)
+[![Indexed Servers](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fmcpdir.dev%2Fapi%2Fstats&query=%24.servers&label=servers&color=06b6d4&style=flat-square)](https://mcpdir.dev/servers)
+[![Validated Servers](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fmcpdir.dev%2Fapi%2Fstats&query=%24.validated&label=validated&color=22c55e&style=flat-square)](https://mcpdir.dev/servers?validated=true)
 [![License](https://img.shields.io/badge/license-MIT-a855f7?style=flat-square)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-22c55e?style=flat-square)](CONTRIBUTING.md)
-[![Deploy](https://img.shields.io/badge/deploy-vercel-black?style=flat-square&logo=vercel)](https://vercel.com)
+[![Hosted on Uno Cloud](https://img.shields.io/badge/hosted_on-Uno_Cloud-6366f1?style=flat-square)](https://uno4.dev)
 
 <br />
 
 <a href="https://mcpdir.dev">
-  <img src="public/preview.gif" alt="MCP Hub Preview" width="800" />
+  <img src="https://mcpdir.dev/og/default" alt="MCP Hub — open MCP server directory" width="800" />
 </a>
 
 <br />
@@ -35,11 +37,11 @@
 
 MCP Hub is the **largest open-source directory** of **Model Context Protocol (MCP) servers** — the open standard that enables AI assistants like Claude, GPT, and others to interact with external tools, databases, and services.
 
-Unlike closed registries, MCP Hub aggregates servers from **5+ sources** and makes them freely searchable. No walled gardens, no gatekeeping — just a community-driven index of every MCP server we can find.
+Unlike closed registries, MCP Hub aggregates servers from **6 sources** and makes them freely searchable. No walled gardens, no gatekeeping — just a community-driven index of every MCP server we can find.
 
 <div align="center">
 
-> **Growing server index** · **Multiple categories** · **5 data sources** · **100% open-source**
+> **Live, growing server index** · **9 categories** · **6 data sources** · **100% open-source**
 
 </div>
 
@@ -60,6 +62,7 @@ We aggregate MCP servers from multiple sources to provide the most comprehensive
 | Source | Description | Link |
 |:------:|:------------|:----:|
 | **MCP Registry** | Official Model Context Protocol registry | [registry.modelcontextprotocol.io](https://registry.modelcontextprotocol.io) |
+| **MCP Official** | Reference and archived servers from the MCP organization | [github.com/modelcontextprotocol](https://github.com/modelcontextprotocol) |
 | **npm** | Node.js packages with `mcp` keyword | [npmjs.com](https://www.npmjs.com/search?q=keywords:mcp) |
 | **GitHub** | Repositories with `mcp-server` topic | [github.com/topics/mcp-server](https://github.com/topics/mcp-server) |
 | **Glama** | Curated MCP servers from Glama.ai | [glama.ai/mcp/servers](https://glama.ai/mcp/servers) |
@@ -73,7 +76,7 @@ We aggregate MCP servers from multiple sources to provide the most comprehensive
 - Community-assisted validation for servers requiring config
 
 ### GitHub Integration
-- Real-time stars & forks tracking
+- Regularly refreshed stars & forks
 - Last commit timestamps
 - Direct links to source repositories
 - README rendering with syntax highlighting
@@ -93,11 +96,12 @@ We aggregate MCP servers from multiple sources to provide the most comprehensive
 | **Framework** | [Next.js 16](https://nextjs.org) (App Router) |
 | **UI** | [React 19](https://react.dev) + [Tailwind CSS 4](https://tailwindcss.com) |
 | **Components** | [Radix UI](https://radix-ui.com) + [Lucide Icons](https://lucide.dev) |
-| **Database** | [PostgreSQL](https://postgresql.org) via [Neon](https://neon.tech) (serverless) |
+| **Database** | Managed [PostgreSQL](https://postgresql.org) on [Uno Cloud](https://uno4.dev) |
 | **ORM** | [Drizzle ORM](https://orm.drizzle.team) |
 | **Auth** | [NextAuth.js v5](https://authjs.dev) (GitHub OAuth) |
-| **AI Parsing** | [Anthropic Claude](https://anthropic.com) |
+| **AI Parsing** | Anthropic or OpenRouter-compatible models |
 | **Validation** | Docker containers (Node.js/Python) |
+| **Hosting** | Docker deployment on [Uno Cloud](https://uno4.dev) |
 
 ---
 
@@ -107,7 +111,7 @@ We aggregate MCP servers from multiple sources to provide the most comprehensive
 
 - **Node.js** 20+
 - **pnpm** 9+
-- **PostgreSQL** database (or [Neon](https://neon.tech) account)
+- **PostgreSQL** database
 - **GitHub OAuth App** (for authentication)
 
 ### 1. Clone & Install
@@ -127,7 +131,7 @@ cp .env.example .env.local
 Configure your `.env.local`:
 
 ```env
-# Database (Neon recommended)
+# PostgreSQL
 DATABASE_URL=postgresql://user:password@host/database?sslmode=require
 
 # GitHub (for sync + OAuth)
@@ -259,7 +263,7 @@ We welcome contributions! Here's how to get started:
 ## Roadmap
 
 ### Completed
-- [x] Multi-source indexing (MCP Registry, npm, GitHub, Glama, PulseMCP)
+- [x] Multi-source indexing (MCP Registry, MCP Official, npm, GitHub, Glama, PulseMCP)
 - [x] Server submission form with validation
 - [x] Admin dashboard with validation queue
 - [x] Auto-revalidation on version updates
@@ -298,7 +302,7 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 <div align="center">
 
-**Built with [Next.js](https://nextjs.org) and [Neon](https://neon.tech)**
+**Built with [Next.js](https://nextjs.org), [PostgreSQL](https://postgresql.org), and [Uno Cloud](https://uno4.dev)**
 
 [Report Bug](https://github.com/eL1fe/mcpdir/issues) · [Request Feature](https://github.com/eL1fe/mcpdir/issues) · [Discussions](https://github.com/eL1fe/mcpdir/discussions)
 
