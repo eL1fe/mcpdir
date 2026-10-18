@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { submissions, users } from "@/lib/db/schema";
+import { submissions } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { indexServerFromSubmission } from "@/lib/submission-indexer";
 
@@ -25,11 +25,7 @@ export async function GET(
   }
 
   // Only submitter or admin can view
-  const user = await db.query.users.findFirst({
-    where: eq(users.id, session.user.id),
-  });
-
-  if (submission.userId !== session.user.id && user?.isAdmin !== 1) {
+  if (submission.userId !== session.user.id && !session.user.isAdmin) {
     return NextResponse.json({ error: "Access denied" }, { status: 403 });
   }
 
@@ -47,12 +43,8 @@ export async function PATCH(
     return NextResponse.json({ error: "Authentication required" }, { status: 401 });
   }
 
-  // Only admin can approve/reject
-  const user = await db.query.users.findFirst({
-    where: eq(users.id, session.user.id),
-  });
-
-  if (user?.isAdmin !== 1) {
+  // Only admin can approve/reject; isAdmin also covers ADMIN_GITHUB_USERNAMES
+  if (!session.user.isAdmin) {
     return NextResponse.json({ error: "Admin access required" }, { status: 403 });
   }
 
