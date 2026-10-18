@@ -14,6 +14,7 @@ import {
   BarChart,
   MessageCircle,
   FolderOpen,
+  Film,
 } from "lucide-react";
 import { getCategoryBySlug, getServersByCategory } from "@/lib/db/queries";
 import { ServerCard } from "@/components/server-card";
@@ -73,6 +74,7 @@ const CATEGORY_ICONS: Record<string, React.ElementType> = {
   productivity: CheckSquare,
   "data-analytics": BarChart,
   communication: MessageCircle,
+  media: Film,
   other: Package,
 };
 

@@ -10,6 +10,7 @@ import {
   BarChart,
   MessageCircle,
   FolderOpen,
+  Film,
   ArrowRight,
 } from "lucide-react";
 import { getCategories } from "@/lib/db/queries";
@@ -41,6 +42,7 @@ const CATEGORY_ICONS: Record<string, React.ElementType> = {
   productivity: CheckSquare,
   "data-analytics": BarChart,
   communication: MessageCircle,
+  media: Film,
   other: Package,
 };
 
@@ -53,6 +55,7 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string; glow: string }
   productivity: { bg: "from-rose-500/20 to-pink-500/20", text: "text-rose-400", glow: "group-hover:shadow-rose-500/20" },
   "data-analytics": { bg: "from-violet-500/20 to-purple/20", text: "text-violet-400", glow: "group-hover:shadow-violet-500/20" },
   communication: { bg: "from-teal-500/20 to-cyan/20", text: "text-teal-400", glow: "group-hover:shadow-teal-500/20" },
+  media: { bg: "from-red-500/20 to-orange/20", text: "text-red-400", glow: "group-hover:shadow-red-500/20" },
   other: { bg: "from-gray-500/20 to-slate-500/20", text: "text-gray-400", glow: "group-hover:shadow-gray-500/20" },
 };
 

@@ -14,7 +14,8 @@ const CATEGORIES = [
   { slug: "productivity", name: "Productivity", description: "Calendar, Email, Notes, and productivity apps", icon: "CheckSquare", displayOrder: 6 },
   { slug: "data-analytics", name: "Data & Analytics", description: "BigQuery, Snowflake, and data analysis tools", icon: "BarChart", displayOrder: 7 },
   { slug: "communication", name: "Communication", description: "Discord, Telegram, and messaging platforms", icon: "MessageCircle", displayOrder: 8 },
-  { slug: "other", name: "Other", description: "Miscellaneous MCP servers", icon: "Package", displayOrder: 9 },
+  { slug: "media", name: "Media", description: "Video, audio, music, images, and stock footage", icon: "Film", displayOrder: 9 },
+  { slug: "other", name: "Other", description: "Miscellaneous MCP servers", icon: "Package", displayOrder: 10 },
 ];
 
 const TAGS = [

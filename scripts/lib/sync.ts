@@ -18,6 +18,7 @@ import { getSource, getAllSources } from "./sources";
 import { deduplicateServers, groupByCanonicalUrl, MergedServer } from "./deduplication";
 import { validateMcpServerSafe } from "./docker-validator";
 import { detectRequiresConfig } from "./mcp-validator";
+import { matchMediaKeyword } from "./media-category";
 
 // Read token at runtime (after dotenv is loaded)
 function getGitHubToken(): string | undefined {
@@ -111,6 +112,19 @@ const TOPIC_TO_CATEGORY: Record<string, string> = {
   rest: "apis-services",
   graphql: "apis-services",
   webhook: "apis-services",
+  media: "media",
+  multimedia: "media",
+  video: "media",
+  audio: "media",
+  music: "media",
+  youtube: "media",
+  spotify: "media",
+  podcast: "media",
+  ffmpeg: "media",
+  photography: "media",
+  "image-generation": "media",
+  "text-to-speech": "media",
+  tts: "media",
 };
 
 // Keyword patterns for categorization
@@ -179,6 +193,8 @@ function getCategoriesFromText(name: string, description: string): string[] {
       }
     }
   }
+
+  if (matchMediaKeyword(text)) cats.add("media");
 
   return Array.from(cats);
 }

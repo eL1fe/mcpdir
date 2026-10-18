@@ -59,7 +59,7 @@ Extract and return this JSON structure:
   "features": ["feature 1", "feature 2", "feature 3"]
 }
 
-Valid categories: databases, file-systems, apis-services, dev-tools, ai-ml, productivity, data-analytics, communication, other
+Valid categories: databases, file-systems, apis-services, dev-tools, ai-ml, productivity, data-analytics, communication, media, other
 
 Return ONLY the JSON object, nothing else.`;
 
