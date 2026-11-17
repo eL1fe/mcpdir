@@ -23,6 +23,10 @@ const weekCache = [
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  experimental: {
+    // Keep on-demand pages in Next's bounded memory cache as the catalog grows.
+    isrFlushToDisk: false,
+  },
   images: {
     remotePatterns: [
       {
